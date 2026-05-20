@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -132,7 +133,15 @@
     .lbar-fill { height: 100%; background: linear-gradient(90deg, #7C5CFC, #00C2FF); width: 0%; transition: width 1.4s cubic-bezier(.16,1,.3,1); border-radius: 1px; }
 
     /* ── scroll offset for fixed nav ── */
-    #about, #experience, #education, #skills, #contact { scroll-margin-top: 80px; }
+    #about, #experience, #education, #skills, #location, #contact { scroll-margin-top: 80px; }
+
+    /* ── map ── */
+    #madrid-map { height: 420px; border-radius: 4px; overflow: hidden; background: #0a0a0a; }
+    .leaflet-container { background: #0a0a0a !important; }
+    @keyframes mapPulse {
+      0%,100% { box-shadow: 0 0 0 4px rgba(124,92,252,.25), 0 0 24px rgba(124,92,252,.4); }
+      50%      { box-shadow: 0 0 0 10px rgba(124,92,252,.08), 0 0 40px rgba(0,194,255,.35); }
+    }
 
     /* ── mobile nav ── */
     @media (max-width: 767px) {
@@ -222,6 +231,7 @@
       <a href="#experience" class="nav-tab">Experience</a>
       <a href="#education"  class="nav-tab">Education</a>
       <a href="#skills"     class="nav-tab">Skills</a>
+      <a href="#location"   class="nav-tab">Location</a>
       <a href="#contact"    class="nav-tab">Contact</a>
     </div>
 
@@ -246,6 +256,7 @@
     <a href="#experience" onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Experience</a>
     <a href="#education"  onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Education</a>
     <a href="#skills"     onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Skills</a>
+    <a href="#location"   onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Location</a>
     <a href="#contact"    onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Contact</a>
   </div>
 
@@ -591,6 +602,27 @@
   </section>
 
   <!-- ══════════════════════════════════════════
+       06 — LOCATION
+  ══════════════════════════════════════════ -->
+  <section id="location" style="background:#060606;" class="py-32 px-12 md:px-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex gap-14 md:gap-20 mb-16">
+        <span class="rv sec-num shrink-0">06</span>
+        <div class="flex-1">
+          <p class="rv sec-label">Base</p>
+          <h2 class="rv d1 font-serif sec-h">Madrid, Spain</h2>
+          <p class="rv d2 mt-4" style="font-size:.85rem;color:#555;line-height:1.7;max-width:480px;">
+            Currently based in Madrid — working across Europe and beyond from the heart of Spain.
+          </p>
+        </div>
+      </div>
+      <div class="rv d3" style="border:1px solid #1c1c1c;border-radius:4px;overflow:hidden;">
+        <div id="madrid-map"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
        CONTACT
   ══════════════════════════════════════════ -->
   <section id="contact" class="relative py-48 px-12 md:px-20 overflow-hidden" style="background:#000;">
@@ -715,6 +747,59 @@
       }
     }), { threshold: 0.6 });
     document.querySelectorAll('.lang-item').forEach(el => lo.observe(el));
+  </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ── MADRID MAP ──
+    (function() {
+      const mapEl = document.getElementById('madrid-map');
+      const mapObs = new IntersectionObserver(entries => {
+        if (!entries[0].isIntersecting) return;
+        mapObs.disconnect();
+
+        const map = L.map('madrid-map', {
+          center: [40.4168, -3.7038],
+          zoom: 13,
+          zoomControl: false,
+          scrollWheelZoom: false,
+          attributionControl: true,
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" style="color:#444">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" style="color:#444">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 19,
+        }).addTo(map);
+
+        // custom gradient pin
+        const icon = L.divIcon({
+          html: `<div style="
+            width:18px;height:18px;border-radius:50%;
+            background:linear-gradient(135deg,#7C5CFC,#00C2FF);
+            animation:mapPulse 2.4s ease-in-out infinite;
+            position:relative;
+          "><div style="
+            position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+            width:6px;height:6px;border-radius:50%;background:#fff;opacity:.9;
+          "></div></div>`,
+          className: '',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+        });
+
+        L.marker([40.4168, -3.7038], { icon }).addTo(map);
+
+        // style attribution control to match dark theme
+        const attribEl = document.querySelector('.leaflet-control-attribution');
+        if (attribEl) {
+          attribEl.style.background = 'rgba(0,0,0,.7)';
+          attribEl.style.color = '#444';
+          attribEl.style.fontSize = '.6rem';
+        }
+      }, { threshold: 0.1 });
+
+      mapObs.observe(mapEl);
+    })();
   </script>
 </body>
 </html>
