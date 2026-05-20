@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giovanni Tognetto — Partner Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"DM Serif Display"', 'Georgia', 'serif'],
+            sans:  ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            rev: {
+              black:  '#000000',
+              deep:   '#060606',
+              card:   '#0f0f0f',
+              border: '#222222',
+              dim:    '#333333',
+              muted:  '#666666',
+              gray:   '#999999',
+              text:   '#cccccc',
+              purple: '#7C5CFC',
+              blue:   '#0075EB',
+              cyan:   '#00C2FF',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(#7C5CFC, #00C2FF); border-radius: 2px; }
+
+    /* ── gradients ── */
+    .g-text { background: linear-gradient(135deg, #7C5CFC 0%, #0075EB 55%, #00C2FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .g-line  { background: linear-gradient(90deg, #7C5CFC, #00C2FF); }
+    .g-bg    { background: linear-gradient(135deg, #7C5CFC 0%, #0075EB 55%, #00C2FF 100%); }
+
+    /* ── pill nav ── */
+    .nav-pill {
+      position: relative;
+      display: flex;
+      background: rgba(8,8,8,0.92);
+      border: 1px solid #222;
+      border-radius: 100px;
+      padding: 5px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    #nav-slider {
+      position: absolute;
+      top: 5px;
+      height: calc(100% - 10px);
+      border-radius: 100px;
+      background: linear-gradient(90deg, #7C5CFC, #00C2FF);
+      transition: left .28s cubic-bezier(.16,1,.3,1), width .28s cubic-bezier(.16,1,.3,1), opacity .18s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .nav-tab {
+      position: relative; z-index: 1;
+      padding: 8px 18px; border-radius: 100px;
+      font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 500;
+      color: #777; text-decoration: none; white-space: nowrap;
+      transition: color .2s;
+    }
+    .nav-tab:hover { color: #fff; }
+
+    /* ── floating hero ── */
+    #hero { position: relative; width: 100%; height: 100vh; overflow: hidden; background: #000; isolation: isolate; }
+    .float-wrap { position: absolute; inset: 0; }
+    .float-el { position: absolute; will-change: transform; }
+    .float-el img {
+      display: block; object-fit: cover;
+      filter: brightness(.82) saturate(1.1);
+      transition: filter .3s;
+    }
+    .float-el:hover img { filter: brightness(1) saturate(1.2); }
+    .hero-center {
+      position: absolute; inset: 0; z-index: 20;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity .9s ease, transform .9s ease;
+    }
+    .hero-center.in { opacity: 1; transform: none; }
+
+    /* dark vignette behind center text */
+    .hero-center::before {
+      content: '';
+      position: absolute; inset: -60px;
+      background: radial-gradient(ellipse 55% 60% at 50% 50%, rgba(0,0,0,.65) 0%, transparent 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* ── scroll reveal ── */
+    .rv { opacity: 0; transform: translateY(28px); transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+    .rv.in { opacity: 1; transform: none; }
+    .d1{transition-delay:.1s} .d2{transition-delay:.22s} .d3{transition-delay:.36s} .d4{transition-delay:.5s}
+
+    /* ── scroll cue ── */
+    @keyframes drop { 0%,100%{transform:translateY(0);opacity:.7} 50%{transform:translateY(8px);opacity:.25} }
+    .drop { animation: drop 2.4s ease-in-out infinite; }
+
+    /* ── experience rows ── */
+    .exp-row { border-top: 1px solid #1c1c1c; padding: 44px 0; transition: border-color .3s; }
+    .exp-row:last-child { border-bottom: 1px solid #1c1c1c; }
+    .exp-row:hover { border-top-color: rgba(124,92,252,.5); }
+    .exp-row:last-child:hover { border-bottom-color: rgba(124,92,252,.5); }
+    .ebullet { position: relative; padding-left: 18px; }
+    .ebullet::before { content: '—'; position: absolute; left: 0; top: 0; color: #444; font-size: .75rem; line-height: 1.7; }
+
+    /* ── skill tags ── */
+    .tag { display: inline-block; padding: 5px 15px; border-radius: 100px; border: 1px solid #252525; font-size: .75rem; color: #888; transition: border-color .2s, color .2s, background .2s; }
+    .tag:hover { border-color: #7C5CFC; color: #fff; background: rgba(124,92,252,.08); }
+
+    /* ── language bars ── */
+    .lbar { height: 2px; background: #1e1e1e; border-radius: 1px; overflow: hidden; }
+    .lbar-fill { height: 100%; background: linear-gradient(90deg, #7C5CFC, #00C2FF); width: 0%; transition: width 1.4s cubic-bezier(.16,1,.3,1); border-radius: 1px; }
+
+    /* ── scroll offset for fixed nav ── */
+    #about, #experience, #education, #skills, #contact { scroll-margin-top: 80px; }
+
+    /* ── mobile nav ── */
+    @media (max-width: 767px) {
+      .nav-pill { display: none; }
+      #nav-mobile-btn { display: flex; }
+      #nav-mobile-menu { display: none; flex-direction: column; gap: 0; }
+      #nav-mobile-menu.open { display: flex; }
+    }
+    @media (min-width: 768px) {
+      #nav-mobile-btn { display: none; }
+      #nav-mobile-menu { display: none !important; }
+      .nav-pill { display: flex; }
+    }
+    #nav-mobile-btn {
+      display: none; align-items: center; justify-content: center;
+      width: 36px; height: 36px; cursor: pointer; background: none; border: none;
+      padding: 0; flex-direction: column; gap: 5px;
+    }
+    #nav-mobile-btn span {
+      display: block; width: 22px; height: 1.5px; background: #fff;
+      transition: transform .25s, opacity .25s;
+    }
+    #nav-mobile-menu {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,.97); z-index: 200; padding: 100px 40px 40px;
+    }
+    #nav-mobile-menu a {
+      display: block; font-family: "DM Serif Display", serif;
+      font-size: 2.2rem; color: #fff; text-decoration: none;
+      padding: 16px 0; border-bottom: 1px solid #1a1a1a;
+      transition: color .2s;
+    }
+    #nav-mobile-menu a:hover { color: #7C5CFC; }
+    #nav-close {
+      position: absolute; top: 28px; right: 32px;
+      background: none; border: none; color: #666; font-size: 1.5rem;
+      cursor: pointer; padding: 4px;
+    }
+
+    /* ── edu grid ── */
+    .edu-grid { display: grid; grid-template-columns: repeat(3,1fr); border: 1px solid #1c1c1c; }
+    .edu-card { padding: 44px; border-right: 1px solid #1c1c1c; transition: background .3s; }
+    .edu-card:last-child { border-right: none; }
+    .edu-card:hover { background: #080808; }
+    @media(max-width:768px){ .edu-grid{grid-template-columns:1fr;} .edu-card{border-right:none;border-bottom:1px solid #1c1c1c;} .edu-card:last-child{border-bottom:none;} }
+
+    /* ── contact links ── */
+    .clink { display: inline-flex; align-items: center; gap: 10px; color: #777; font-size: .85rem; text-decoration: none; transition: color .22s; }
+    .clink .arr { display: inline-block; transition: transform .25s cubic-bezier(.16,1,.3,1); }
+    .clink:hover { color: #fff; }
+    .clink:hover .arr { transform: translate(4px,-4px); }
+
+    /* ── section header ── */
+    .sec-label { font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: #7C5CFC; margin-bottom: 12px; }
+    .sec-h { font-size: clamp(2.6rem,5.5vw,4.2rem); letter-spacing: -.035em; font-weight: 400; }
+    .sec-num { font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: #2a2a2a; padding-top: 4px; }
+  </style>
+  <script>
+    if (location.search.includes('preview')) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const s = document.createElement('style');
+        s.textContent = '.rv{opacity:1!important;transform:none!important;transition:none!important;} .hero-center{opacity:1!important;transform:none!important;} .lbar-fill{transition:none!important;}';
+        document.head.appendChild(s);
+        document.querySelectorAll('.rv,.hero-center').forEach(e => e.classList.add('in'));
+        document.querySelectorAll('.lbar-fill').forEach(b => { b.style.width = b.dataset.w; });
+      });
+    }
+  </script>
+</head>
+<body class="bg-black text-white font-sans overflow-x-hidden">
+
+  <!-- top gradient bar -->
+  <div class="fixed top-0 left-0 right-0 h-px z-50 g-line opacity-60"></div>
+
+  <!-- ══════════════════════════════════════════
+       NAV — pill with sliding gradient indicator
+  ══════════════════════════════════════════ -->
+  <nav id="nav" class="fixed top-0 left-0 right-0 flex items-center justify-between px-10"
+       style="z-index:999;padding-top:26px;padding-bottom:26px;transition:padding .4s,background .4s,border-color .4s;border-bottom:1px solid transparent;">
+
+    <a href="#" class="font-serif text-xl tracking-tight text-white no-underline" style="position:relative;z-index:1000;">GT</a>
+
+    <!-- desktop pill -->
+    <div class="nav-pill" id="nav-pill" style="position:relative;z-index:1000;">
+      <span id="nav-slider"></span>
+      <a href="#about"      class="nav-tab">About</a>
+      <a href="#experience" class="nav-tab">Experience</a>
+      <a href="#education"  class="nav-tab">Education</a>
+      <a href="#skills"     class="nav-tab">Skills</a>
+      <a href="#contact"    class="nav-tab">Contact</a>
+    </div>
+
+    <!-- right side: say hello + mobile button -->
+    <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1000;">
+      <a href="mailto:giovannitognetto.uni@gmail.com"
+         style="font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#666;border:1px solid #222;border-radius:100px;padding:8px 20px;text-decoration:none;transition:color .2s,border-color .2s;"
+         onmouseover="this.style.color='#fff';this.style.borderColor='#7C5CFC';"
+         onmouseout="this.style.color='#666';this.style.borderColor='#222';">
+        Say hello
+      </a>
+      <button id="nav-mobile-btn" onclick="document.getElementById('nav-mobile-menu').classList.toggle('open')" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- mobile fullscreen menu -->
+  <div id="nav-mobile-menu">
+    <button id="nav-close" onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">✕</button>
+    <a href="#about"      onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">About</a>
+    <a href="#experience" onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Experience</a>
+    <a href="#education"  onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Education</a>
+    <a href="#skills"     onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Skills</a>
+    <a href="#contact"    onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Contact</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       HERO — parallax floating images
+  ══════════════════════════════════════════ -->
+  <section id="hero">
+    <!-- floating images layer -->
+    <div class="float-wrap" id="float-wrap">
+
+      <!-- top-left: concert crowd -->
+      <div class="float-el" data-depth="1.5" style="top:6%;left:4%;">
+        <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=320&q=75"
+             alt="" style="width:150px;height:110px;" />
+      </div>
+
+      <!-- top-center: festival -->
+      <div class="float-el" data-depth="2" style="top:3%;left:28%;">
+        <img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=320&q=75"
+             alt="" style="width:160px;height:210px;" />
+      </div>
+
+      <!-- top-right: conference event -->
+      <div class="float-el" data-depth="1" style="top:4%;right:8%;">
+        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=320&q=75"
+             alt="" style="width:140px;height:185px;" />
+      </div>
+
+      <!-- Giovanni's photo — right side, medium depth -->
+      <div class="float-el" data-depth="0.7" style="top:18%;right:5%;">
+        <img src="Assets/WhatsApp Image 2024-12-28 at 17.16.14.jpeg"
+             alt="Giovanni Tognetto" style="width:190px;height:240px;" />
+      </div>
+
+      <!-- mid-left: music/DJ -->
+      <div class="float-el" data-depth="2.5" style="top:44%;left:2%;">
+        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=320&q=75"
+             alt="" style="width:175px;height:125px;" />
+      </div>
+
+      <!-- mid-right small: city -->
+      <div class="float-el" data-depth="1.5" style="top:48%;right:22%;">
+        <img src="https://images.unsplash.com/photo-1543783207-ec64e4d95325?w=320&q=75"
+             alt="" style="width:115px;height:150px;" />
+      </div>
+
+      <!-- bottom-left large: festival crowd -->
+      <div class="float-el" data-depth="3" style="bottom:9%;left:12%;">
+        <img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&q=75"
+             alt="" style="width:230px;height:150px;" />
+      </div>
+
+      <!-- bottom-right: event people -->
+      <div class="float-el" data-depth="2" style="bottom:7%;right:5%;">
+        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=320&q=75"
+             alt="" style="width:170px;height:220px;" />
+      </div>
+
+    </div>
+
+    <!-- center text -->
+    <div class="hero-center" id="hero-center">
+      <p style="font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#7C5CFC;margin-bottom:20px;font-weight:600;">
+        Partner Management Associate &nbsp;·&nbsp; Fever &nbsp;·&nbsp; Madrid
+      </p>
+      <h1 class="font-serif font-normal text-white"
+          style="font-size:clamp(4rem,10vw,8.5rem);letter-spacing:-.04em;line-height:1;margin-bottom:0;">
+        Giovanni
+      </h1>
+      <h1 class="font-serif font-normal"
+          style="font-size:clamp(4rem,10vw,8.5rem);letter-spacing:-.04em;line-height:1;font-style:italic;"
+          class="g-text">
+        <span class="g-text">Tognetto</span>
+      </h1>
+      <div class="g-line mt-6 mb-5 mx-auto" style="width:64px;height:1px;"></div>
+      <p style="font-size:.82rem;letter-spacing:.1em;color:#888;font-weight:400;text-transform:uppercase;">
+        Events &amp; Entertainment &nbsp;/&nbsp; Spain
+      </p>
+    </div>
+
+    <!-- scroll cue -->
+    <div class="drop absolute flex flex-col items-center gap-2 z-30"
+         style="bottom:2.5rem;left:50%;transform:translateX(-50%);">
+      <p style="font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#444;">Scroll to explore</p>
+      <div class="g-line" style="width:1px;height:28px;opacity:.4;"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       01 — ABOUT
+  ══════════════════════════════════════════ -->
+  <section id="about" class="bg-black py-32 px-12 md:px-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex gap-14 md:gap-20">
+        <span class="rv sec-num shrink-0">01</span>
+        <div class="flex-1">
+          <p class="rv sec-label">About</p>
+          <p class="rv d1 font-serif font-normal" style="font-size:clamp(1.5rem,3vw,2.4rem);color:#d0d0d0;max-width:840px;line-height:1.55;">
+            Partner Manager specialized in building and scaling
+            <span class="g-text">high-impact partnerships</span>
+            within the events and entertainment space. Combining a
+            <span class="g-text">commercial mindset</span>
+            with data-driven decision making to turn partnerships into measurable success.
+          </p>
+          <div class="rv d2 mt-16 grid grid-cols-3 gap-10" style="max-width:500px;">
+            <div>
+              <p class="font-serif text-white" style="font-size:2.6rem;letter-spacing:-.04em;line-height:1;">20+</p>
+              <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:6px;">Active Projects</p>
+            </div>
+            <div>
+              <p class="font-serif text-white" style="font-size:2.6rem;letter-spacing:-.04em;line-height:1;">500+</p>
+              <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:6px;">Deals Analyzed</p>
+            </div>
+            <div>
+              <p class="font-serif text-white" style="font-size:2.6rem;letter-spacing:-.04em;line-height:1;">150K+</p>
+              <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:6px;">Event Attendees</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       02 — EXPERIENCE
+  ══════════════════════════════════════════ -->
+  <section id="experience" style="background:#060606;" class="py-32 px-12 md:px-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex gap-14 md:gap-20 mb-20">
+        <span class="rv sec-num shrink-0">02</span>
+        <div>
+          <p class="rv sec-label">Career</p>
+          <h2 class="rv d1 font-serif sec-h">Experience</h2>
+        </div>
+      </div>
+
+      <!-- Fever -->
+      <div class="rv exp-row">
+        <div class="grid grid-cols-12 gap-8 md:gap-16">
+          <div class="col-span-12 md:col-span-4 mb-4 md:mb-0">
+            <p class="font-serif text-white" style="font-size:1.5rem;">Fever</p>
+            <p style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:4px;">Technology · Madrid, Spain</p>
+          </div>
+          <div class="col-span-12 md:col-span-8 space-y-8">
+            <div>
+              <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+                <p class="text-sm font-medium" style="color:#e0e0e0;">Partner Management Associate</p>
+                <p style="font-size:.7rem;letter-spacing:.08em;color:#7C5CFC;">Aug 2025 — Present</p>
+              </div>
+              <ul class="space-y-2">
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managing 20+ projects across Europe and Asia, driving end-to-end execution and exceeding partner expectations.</li>
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Acting as primary point of contact for 15+ key partners, strengthening relationships and launching 20+ events.</li>
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Leading 10+ marketing campaigns alongside Operations and Marketing teams.</li>
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Analyzed partner performance to identify growth opportunities; won 5+ new partners alongside Sales.</li>
+              </ul>
+            </div>
+            <div style="padding-top:20px;border-top:1px solid #191919;">
+              <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+                <p class="text-sm font-medium" style="color:#e0e0e0;">Market Research Analyst</p>
+                <p style="font-size:.7rem;letter-spacing:.08em;color:#666;">Sep 2024 — Aug 2025</p>
+              </div>
+              <ul class="space-y-2">
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Analyzed 500+ potential business opportunities using market intelligence to identify high-value clients.</li>
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managed CRM system with 500+ accounts, increasing efficiency of lead tracking and partner engagement.</li>
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Assisted in negotiating 50+ new partnerships with major producers and venues across 10+ countries.</li>
+                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Developed 50+ market research strategies identifying new partners in new territories.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RDS -->
+      <div class="rv exp-row">
+        <div class="grid grid-cols-12 gap-8 md:gap-16">
+          <div class="col-span-12 md:col-span-4 mb-4 md:mb-0">
+            <p class="font-serif text-white" style="font-size:1.5rem;">RDS</p>
+            <p style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:4px;">Radio Dimensione Suono · Milan, Italy</p>
+          </div>
+          <div class="col-span-12 md:col-span-8">
+            <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+              <p class="text-sm font-medium" style="color:#e0e0e0;">Special Initiatives — Marketing Intern</p>
+              <p style="font-size:.7rem;letter-spacing:.08em;color:#666;">Jan 2023 — Jul 2023</p>
+            </div>
+            <ul class="space-y-2">
+              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Executed 40+ marketing activations for top automotive brands including Ferrari and Porsche.</li>
+              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managed the RDS Summer Festival across 12 Italian locations — 150,000+ attendees.</li>
+              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Networking with 50+ sponsors and stakeholders; built media plans, finances and budgets.</li>
+              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Executed 15+ on-site events including music festivals, sports events, and marathons.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Illy -->
+      <div class="rv exp-row">
+        <div class="grid grid-cols-12 gap-8 md:gap-16">
+          <div class="col-span-12 md:col-span-4 mb-4 md:mb-0">
+            <p class="font-serif text-white" style="font-size:1.5rem;">illycaffè</p>
+            <p style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:4px;">Food &amp; Beverage · Trieste, Italy</p>
+          </div>
+          <div class="col-span-12 md:col-span-8">
+            <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
+              <p class="text-sm font-medium" style="color:#e0e0e0;">Project Management Intern</p>
+              <p style="font-size:.7rem;letter-spacing:.08em;color:#666;">Mar 2021 — May 2021</p>
+            </div>
+            <ul class="space-y-2">
+              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">8+ benchmark analyses on sustainability and product lifecycle — 5% reduction in packaging waste.</li>
+              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managed product lifecycle and innovation strategies, increasing sales revenue by 7%.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       03 — EDUCATION
+  ══════════════════════════════════════════ -->
+  <section id="education" class="bg-black py-32 px-12 md:px-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex gap-14 md:gap-20 mb-20">
+        <span class="rv sec-num shrink-0">03</span>
+        <div>
+          <p class="rv sec-label">Academic</p>
+          <h2 class="rv d1 font-serif sec-h">Education</h2>
+        </div>
+      </div>
+      <div class="edu-grid rv">
+        <div class="edu-card">
+          <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#444;margin-bottom:28px;">2023 — 2024</p>
+          <p class="font-serif leading-tight mb-3" style="font-size:1.4rem;color:#fff;">IE Business School</p>
+          <p class="text-sm mb-5" style="color:#999;">Master's in Digital Marketing &amp; Analytics</p>
+          <div class="g-line mb-5" style="height:1px;opacity:.15;"></div>
+          <p class="text-xs leading-loose" style="color:#666;">Top Student · IE Immersion Week Amsterdam · Salesforce Certificate · Google Analytics Certificate</p>
+          <p style="font-size:.68rem;letter-spacing:.1em;color:#444;margin-top:16px;">Madrid, Spain</p>
+        </div>
+        <div class="edu-card">
+          <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#444;margin-bottom:28px;">2021 — 2022</p>
+          <p class="font-serif leading-tight mb-3" style="font-size:1.4rem;color:#fff;">UPF Barcelona School of Management</p>
+          <p class="text-sm mb-5" style="color:#999;">Master's in Marketing</p>
+          <div class="g-line mb-5" style="height:1px;opacity:.15;"></div>
+          <p class="text-xs leading-loose" style="color:#666;">Class Representative</p>
+          <p style="font-size:.68rem;letter-spacing:.1em;color:#444;margin-top:16px;">Barcelona, Spain</p>
+        </div>
+        <div class="edu-card">
+          <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#444;margin-bottom:28px;">2018 — 2021</p>
+          <p class="font-serif leading-tight mb-3" style="font-size:1.4rem;color:#fff;">Università Bocconi</p>
+          <p class="text-sm mb-5" style="color:#999;">Bachelor's in Business Administration &amp; Management</p>
+          <div class="g-line mb-5" style="height:1px;opacity:.15;"></div>
+          <p class="text-xs leading-loose" style="color:#666;">ESADE International Summer Program · Arabic course (Bocconi)</p>
+          <p style="font-size:.68rem;letter-spacing:.1em;color:#444;margin-top:16px;">Milan, Italy</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       04 — SKILLS
+  ══════════════════════════════════════════ -->
+  <section id="skills" style="background:#060606;" class="py-32 px-12 md:px-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex gap-14 md:gap-20 mb-20">
+        <span class="rv sec-num shrink-0">04</span>
+        <div>
+          <p class="rv sec-label">Toolkit</p>
+          <h2 class="rv d1 font-serif sec-h">Skills</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+        <div class="rv">
+          <p style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:24px;font-weight:600;">Analytics &amp; Data</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag">Google Analytics</span><span class="tag">Google Ads</span>
+            <span class="tag">Tableau</span><span class="tag">SQL</span>
+            <span class="tag">Python</span><span class="tag">Excel</span>
+          </div>
+        </div>
+        <div class="rv d1">
+          <p style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:24px;font-weight:600;">CRM &amp; Marketing</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag">Salesforce</span><span class="tag">SEO &amp; SEM</span>
+            <span class="tag">Microsoft Office</span><span class="tag">Market Research</span>
+            <span class="tag">Media Planning</span>
+          </div>
+        </div>
+        <div class="rv d2">
+          <p style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:24px;font-weight:600;">Soft Skills</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="tag">Partnership Mgmt</span><span class="tag">Negotiation</span>
+            <span class="tag">Event Execution</span><span class="tag">Stakeholder Relations</span>
+            <span class="tag">Project Management</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       05 — LANGUAGES
+  ══════════════════════════════════════════ -->
+  <section class="bg-black py-32 px-12 md:px-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex gap-14 md:gap-20 mb-20">
+        <span class="rv sec-num shrink-0">05</span>
+        <div>
+          <p class="rv sec-label">Communication</p>
+          <h2 class="rv d1 font-serif sec-h">Languages</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-14">
+        <div class="rv lang-item">
+          <div class="flex items-baseline justify-between mb-4">
+            <p class="font-serif text-white" style="font-size:1.3rem;">Italian</p>
+            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Native</p>
+          </div>
+          <div class="lbar"><div class="lbar-fill" data-w="100%"></div></div>
+        </div>
+        <div class="rv d1 lang-item">
+          <div class="flex items-baseline justify-between mb-4">
+            <p class="font-serif text-white" style="font-size:1.3rem;">English</p>
+            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Native</p>
+          </div>
+          <div class="lbar"><div class="lbar-fill" data-w="100%"></div></div>
+        </div>
+        <div class="rv d2 lang-item">
+          <div class="flex items-baseline justify-between mb-4">
+            <p class="font-serif text-white" style="font-size:1.3rem;">Spanish</p>
+            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Fluent</p>
+          </div>
+          <div class="lbar"><div class="lbar-fill" data-w="84%"></div></div>
+        </div>
+        <div class="rv d3 lang-item">
+          <div class="flex items-baseline justify-between mb-4">
+            <p class="font-serif text-white" style="font-size:1.3rem;">French</p>
+            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Beginner</p>
+          </div>
+          <div class="lbar"><div class="lbar-fill" data-w="22%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       CONTACT
+  ══════════════════════════════════════════ -->
+  <section id="contact" class="relative py-48 px-12 md:px-20 overflow-hidden" style="background:#000;">
+    <div class="pointer-events-none absolute" style="width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,252,.1) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div class="max-w-6xl mx-auto relative z-10 text-center">
+      <p class="rv sec-label" style="text-align:center;">Get in touch</p>
+      <h2 class="rv d1 font-serif font-normal" style="font-size:clamp(3.5rem,10vw,8rem);letter-spacing:-.04em;line-height:1;margin-bottom:4rem;">
+        Let's<br/><span class="g-text">talk.</span>
+      </h2>
+      <div class="rv d2 flex flex-col md:flex-row items-center justify-center gap-12 mb-16">
+        <a href="mailto:giovannitognetto.uni@gmail.com" class="clink">
+          <span>giovannitognetto.uni@gmail.com</span><span class="arr">↗</span>
+        </a>
+        <span style="color:#222;" class="max-md:hidden">|</span>
+        <a href="tel:+393459246870" class="clink">
+          <span>(+39) 345 924 6870</span><span class="arr">↗</span>
+        </a>
+        <span style="color:#222;" class="max-md:hidden">|</span>
+        <a href="https://www.linkedin.com/in/giovannitognetto" target="_blank" rel="noopener" class="clink">
+          <span>LinkedIn</span><span class="arr">↗</span>
+        </a>
+      </div>
+      <div class="rv d3 g-line mx-auto" style="height:1px;max-width:200px;opacity:.25;"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════ -->
+  <footer class="px-12 py-7 flex items-center justify-between" style="border-top:1px solid #111;">
+    <span class="font-serif" style="font-size:.85rem;color:#2e2e2e;">Giovanni Tognetto</span>
+    <span style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#222;">Madrid · EU Citizen · 2026</span>
+  </footer>
+
+  <!-- ══════════════════════════════════════════
+       JAVASCRIPT
+  ══════════════════════════════════════════ -->
+  <script>
+    // ── NAV: scroll shrink ──
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      const s = window.scrollY > 60;
+      nav.style.paddingTop    = s ? '14px' : '26px';
+      nav.style.paddingBottom = s ? '14px' : '26px';
+      nav.style.background    = s ? 'rgba(0,0,0,.9)' : 'transparent';
+      nav.style.backdropFilter= s ? 'blur(20px)' : 'none';
+      nav.style.borderBottomColor = s ? '#151515' : 'transparent';
+    });
+
+    // ── NAV: sliding pill indicator ──
+    const pill   = document.getElementById('nav-pill');
+    const slider = document.getElementById('nav-slider');
+    const tabs   = document.querySelectorAll('.nav-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('mouseenter', () => {
+        slider.style.left    = tab.offsetLeft + 'px';
+        slider.style.width   = tab.offsetWidth + 'px';
+        slider.style.opacity = '1';
+      });
+    });
+    pill && pill.addEventListener('mouseleave', () => {
+      slider.style.opacity = '0';
+    });
+
+    // ── PARALLAX FLOATING ──
+    (function() {
+      const hero  = document.getElementById('hero');
+      const floats = Array.from(hero.querySelectorAll('.float-el'));
+      const state  = floats.map(() => ({ x: 0, y: 0 }));
+      let mx = 0, my = 0;
+
+      hero.addEventListener('mousemove', e => {
+        const r = hero.getBoundingClientRect();
+        mx = e.clientX - r.left  - r.width  / 2;
+        my = e.clientY - r.top   - r.height / 2;
+      });
+      hero.addEventListener('mouseleave', () => { mx = 0; my = 0; });
+
+      function tick() {
+        floats.forEach((el, i) => {
+          const depth = parseFloat(el.dataset.depth) || 1;
+          // inverted parallax: move opposite to cursor (like depth behind screen)
+          const tx = mx * (-depth / 22);
+          const ty = my * (-depth / 22);
+          state[i].x += (tx - state[i].x) * 0.055;
+          state[i].y += (ty - state[i].y) * 0.055;
+          el.style.transform = `translate(${state[i].x}px, ${state[i].y}px)`;
+        });
+        requestAnimationFrame(tick);
+      }
+      tick();
+
+      // stagger-in floating images on page load
+      const imgs = hero.querySelectorAll('.float-el img');
+      imgs.forEach((img, i) => {
+        img.style.opacity = '0';
+        setTimeout(() => {
+          img.style.transition = 'opacity 0.55s ease';
+          img.style.opacity = '1';
+        }, 600 + i * 140);
+      });
+    })();
+
+    // ── HERO CENTER: delayed fade-in ──
+    setTimeout(() => {
+      document.getElementById('hero-center').classList.add('in');
+    }, 1300);
+
+    // ── SCROLL REVEAL ──
+    const ro = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('in');
+    }), { threshold: 0.1 });
+    document.querySelectorAll('.rv').forEach(el => ro.observe(el));
+
+    // ── LANGUAGE BARS ──
+    const lo = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.lbar-fill').forEach(b =>
+          setTimeout(() => b.style.width = b.dataset.w, 200)
+        );
+        lo.unobserve(e.target);
+      }
+    }), { threshold: 0.6 });
+    document.querySelectorAll('.lang-item').forEach(el => lo.observe(el));
+  </script>
+</body>
+</html>

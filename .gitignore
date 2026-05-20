@@ -1,0 +1,9 @@
+temporary screenshots/
+.claude/
+CLAUDE.md
+*.py
+*.log
+content_preview.html
+preview.html
+test_exp.html
+.DS_Store
