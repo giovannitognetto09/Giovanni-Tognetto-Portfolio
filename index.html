@@ -1,805 +1,466 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Giovanni Tognetto — Partner Manager</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            serif: ['"DM Serif Display"', 'Georgia', 'serif'],
-            sans:  ['Inter', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            rev: {
-              black:  '#000000',
-              deep:   '#060606',
-              card:   '#0f0f0f',
-              border: '#222222',
-              dim:    '#333333',
-              muted:  '#666666',
-              gray:   '#999999',
-              text:   '#cccccc',
-              purple: '#7C5CFC',
-              blue:   '#0075EB',
-              cyan:   '#00C2FF',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    html { scroll-behavior: smooth; }
-    body { -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-track { background: #000; }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(#7C5CFC, #00C2FF); border-radius: 2px; }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Giovanni Tognetto — Partnerships, Marketing &amp; Data</title>
+<meta name="description" content="Welcome to my office. Click the things on my desk and shelf to explore my work, what I can do for you, and a little about me.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Giovanni Tognetto — Partnerships, Marketing &amp; Data">
+<meta property="og:description" content="Freelance partner manager and marketer for events, entertainment and fast-growing brands. Based in Madrid, working across Europe.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#2e2620;--ink:#2e211c;--ink-rgb:46 33 28;--scrim-rgb:30 29 27;
+  --paper:#f7f0e2;--light:#f5e9d9;--light-rgb:245 233 217;
+  --accent:#f0c64a;--brand:#b2364f;
+  --font-display:'Playfair Display',Georgia,serif;--font-ui:'Karla',system-ui,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--stage)}
+body{font-family:var(--font-ui);color:var(--light);overflow:hidden}
+a{color:var(--accent);text-decoration:none}
 
-    /* ── gradients ── */
-    .g-text { background: linear-gradient(135deg, #7C5CFC 0%, #0075EB 55%, #00C2FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .g-line  { background: linear-gradient(90deg, #7C5CFC, #00C2FF); }
-    .g-bg    { background: linear-gradient(135deg, #7C5CFC 0%, #0075EB 55%, #00C2FF 100%); }
+.page{position:relative;width:100%;height:100dvh;min-height:560px;overflow:hidden}
+.stage{position:absolute;inset:0;container-type:size}
+.scene{position:absolute;inset:0;overflow:hidden}
+.frame{position:absolute;top:50%;left:50%;translate:-50% -50%;
+  width:max(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9}
+.frame canvas{width:100%;height:100%;display:block}
+.loading{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgb(var(--light-rgb)/.5)}
+.scrim{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 48% 42% at 14% 90%,rgb(var(--scrim-rgb)/.6) 0%,rgb(var(--scrim-rgb)/.28) 55%,transparent 100%),
+  linear-gradient(0deg,rgb(var(--scrim-rgb)/.8) 0%,rgb(var(--scrim-rgb)/.38) 26%,transparent 46%)}
 
-    /* ── pill nav ── */
-    .nav-pill {
-      position: relative;
-      display: flex;
-      background: rgba(8,8,8,0.92);
-      border: 1px solid #222;
-      border-radius: 100px;
-      padding: 5px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-    #nav-slider {
-      position: absolute;
-      top: 5px;
-      height: calc(100% - 10px);
-      border-radius: 100px;
-      background: linear-gradient(90deg, #7C5CFC, #00C2FF);
-      transition: left .28s cubic-bezier(.16,1,.3,1), width .28s cubic-bezier(.16,1,.3,1), opacity .18s;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .nav-tab {
-      position: relative; z-index: 1;
-      padding: 8px 18px; border-radius: 100px;
-      font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 500;
-      color: #777; text-decoration: none; white-space: nowrap;
-      transition: color .2s;
-    }
-    .nav-tab:hover { color: #fff; }
+.actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:6;transition:opacity .25s}
+.actions[data-hidden=true]{opacity:0;visibility:hidden}
+.pill{min-height:44px;padding:0 16px;border-radius:999px;cursor:pointer;
+  border:1px solid rgb(var(--light-rgb)/.28);background:rgb(var(--scrim-rgb)/.55);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  color:var(--light);font-family:var(--font-ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.pill:hover{border-color:rgb(var(--light-rgb)/.5)}
+.pill:active{transform:scale(.96)}
+.pill[aria-pressed=true],.pill[aria-expanded=true]{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:700}
 
-    /* ── floating hero ── */
-    #hero { position: relative; width: 100%; height: 100vh; overflow: hidden; background: #000; isolation: isolate; }
-    .float-wrap { position: absolute; inset: 0; }
-    .float-el { position: absolute; will-change: transform; }
-    .float-el img {
-      display: block; object-fit: cover;
-      filter: brightness(.82) saturate(1.1);
-      transition: filter .3s;
-    }
-    .float-el:hover img { filter: brightness(1) saturate(1.2); }
-    .hero-center {
-      position: absolute; inset: 0; z-index: 20;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-      opacity: 0; transform: translateY(12px);
-      transition: opacity .9s ease, transform .9s ease;
-    }
-    .hero-center.in { opacity: 1; transform: none; }
+.intro{position:absolute;left:4%;bottom:6%;width:38%;min-width:260px;pointer-events:none;z-index:5}
+.title{margin:0;font-family:var(--font-display);font-weight:400;
+  font-size:clamp(34px,4.6vw,76px);line-height:1.02;letter-spacing:-.015em}
+.lede{margin:14px 0 0;max-width:30ch;font-size:clamp(14px,1.15vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.82)}
+.counter{margin-top:22px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgb(var(--light-rgb)/.6)}
 
-    /* dark vignette behind center text */
-    .hero-center::before {
-      content: '';
-      position: absolute; inset: -60px;
-      background: radial-gradient(ellipse 55% 60% at 50% 50%, rgba(0,0,0,.65) 0%, transparent 100%);
-      z-index: -1;
-      pointer-events: none;
-    }
+.hot{position:absolute;transform:translate(-50%,-50%);width:var(--w,10%);height:var(--h,14%);
+  padding:0;border:0;background:none;border-radius:14px;cursor:pointer;z-index:4}
+.hot:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ring{position:absolute;inset:0;border-radius:14px;border:2px solid transparent;
+  transition:border-color .2s,background .2s,box-shadow .2s}
+.hot:hover .ring,.hot:focus-visible .ring{border-color:rgba(255,230,170,.55);
+  background:rgba(255,230,170,.14);box-shadow:0 0 0 2px rgba(255,230,170,.3)}
+.chip{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,6px);
+  padding:4px 12px;border:1.5px solid var(--ink);border-radius:999px;background:var(--accent);color:var(--ink);
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+  opacity:0;transition:opacity .16s,transform .16s;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.hot:hover .chip,.hot:focus-visible .chip{opacity:1;transform:translate(-50%,0)}
+.hot[data-hint=true] .ring{animation:hint 1.6s ease-in-out infinite;
+  box-shadow:0 0 0 2px rgba(255,230,170,.6),0 0 18px rgba(255,214,120,.45)}
+@keyframes hint{50%{box-shadow:0 0 0 2px rgba(255,230,170,.2),0 0 8px rgba(255,214,120,.18)}}
 
-    /* ── scroll reveal ── */
-    .rv { opacity: 0; transform: translateY(28px); transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
-    .rv.in { opacity: 1; transform: none; }
-    .d1{transition-delay:.1s} .d2{transition-delay:.22s} .d3{transition-delay:.36s} .d4{transition-delay:.5s}
+.hot[data-open=work]{left:34%;top:60%;--w:15%;--h:22%}
+.hot[data-open=services]{left:47%;top:71%;--w:10%;--h:12%}
+.hot[data-open=contact]{left:80.5%;top:70%;--w:11%;--h:13%}
+.hot[data-open=about]{left:67%;top:57%;--w:8%;--h:14%}
+.hot[data-open=resume]{left:66%;top:25%;--w:11%;--h:16%}
+.hot[data-open=languages]{left:81%;top:41%;--w:8%;--h:13%}
+.hot[data-open=beyond]{left:17%;top:26%;--w:14%;--h:24%}
 
-    /* ── scroll cue ── */
-    @keyframes drop { 0%,100%{transform:translateY(0);opacity:.7} 50%{transform:translateY(8px);opacity:.25} }
-    .drop { animation: drop 2.4s ease-in-out infinite; }
+.panel{position:fixed;top:0;right:0;z-index:9100;display:flex;flex-direction:column;
+  width:min(320px,86vw);height:100dvh;padding:16px 14px;overflow-y:auto;
+  background:rgb(var(--scrim-rgb)/.86);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);
+  box-shadow:-24px 0 60px rgba(0,0,0,.4);transform:translateX(100%);transition:transform .32s cubic-bezier(.3,0,.1,1)}
+.panel[data-open=true]{transform:translateX(0)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:10px}
+.panel-title{font-family:var(--font-display);font-size:18px}
+.panel-close{width:44px;height:44px;border-radius:999px;border:1px solid rgb(var(--light-rgb)/.28);
+  background:none;color:var(--light);font-size:18px;cursor:pointer}
+.item{display:block;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:10px;
+  background:none;color:var(--light);font-family:var(--font-ui);font-size:15px;text-align:left;cursor:pointer}
+.item:hover{background:rgb(var(--light-rgb)/.1)}
+.group{display:flex;flex-direction:column;gap:1px;margin:4px 0;padding-top:6px;border-top:1px solid rgb(var(--light-rgb)/.14)}
+.group-label{padding:4px 12px 2px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:rgb(var(--light-rgb)/.55)}
+.sub{padding-left:22px;color:rgb(var(--light-rgb)/.85)}
 
-    /* ── experience rows ── */
-    .exp-row { border-top: 1px solid #1c1c1c; padding: 44px 0; transition: border-color .3s; }
-    .exp-row:last-child { border-bottom: 1px solid #1c1c1c; }
-    .exp-row:hover { border-top-color: rgba(124,92,252,.5); }
-    .exp-row:last-child:hover { border-bottom-color: rgba(124,92,252,.5); }
-    .ebullet { position: relative; padding-left: 18px; }
-    .ebullet::before { content: '—'; position: absolute; left: 0; top: 0; color: #444; font-size: .75rem; line-height: 1.7; }
+.reader{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:24px}
+.reader[data-open=true]{display:flex}
+.reader-scrim{position:absolute;inset:0;background:rgba(24,18,15,.7);backdrop-filter:blur(2px)}
+.sheet{position:relative;width:min(880px,100%);max-height:84vh;overflow:auto;padding:clamp(26px,4.4vw,52px);
+  border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 36px 70px rgba(0,0,0,.5)}
+.closeX{position:absolute;top:-54px;right:0;width:46px;height:46px;border-radius:999px;border:0;
+  background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
+.r-name{margin:0 0 4px;font-family:var(--font-display);font-weight:400;font-size:clamp(30px,4.2vw,46px);line-height:1.05}
+.r-role{margin:0 0 20px;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--brand)}
+.r-rule{height:2px;background:var(--ink);margin-bottom:22px}
+.r-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:34px}
+.r-lab{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--brand)}
+.r-h{margin:0 0 2px;font-family:var(--font-display);font-weight:400;font-size:22px}
+.r-meta{margin:0 0 8px;font-family:var(--font-mono);font-size:12px;color:rgb(var(--ink-rgb)/.65)}
+.r-p{margin:0 0 16px;font-size:15px;line-height:1.55}
+.r-block{margin-bottom:20px}
+.r-ul{margin:0 0 16px;padding-left:18px;font-size:14.5px;line-height:1.7}
+.sheet a{color:var(--brand);text-decoration:underline}
+.cta{display:inline-block;margin-top:6px;padding:13px 22px;border-radius:999px;background:var(--ink);
+  color:var(--paper)!important;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none!important}
+.cta:hover{background:var(--brand)}
 
-    /* ── skill tags ── */
-    .tag { display: inline-block; padding: 5px 15px; border-radius: 100px; border: 1px solid #252525; font-size: .75rem; color: #888; transition: border-color .2s, color .2s, background .2s; }
-    .tag:hover { border-color: #7C5CFC; color: #fff; background: rgba(124,92,252,.08); }
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
-    /* ── language bars ── */
-    .lbar { height: 2px; background: #1e1e1e; border-radius: 1px; overflow: hidden; }
-    .lbar-fill { height: 100%; background: linear-gradient(90deg, #7C5CFC, #00C2FF); width: 0%; transition: width 1.4s cubic-bezier(.16,1,.3,1); border-radius: 1px; }
-
-    /* ── scroll offset for fixed nav ── */
-    #about, #experience, #education, #skills, #location, #contact { scroll-margin-top: 80px; }
-
-    /* ── map ── */
-    #madrid-map { height: 420px; border-radius: 4px; overflow: hidden; background: #0a0a0a; }
-    .leaflet-container { background: #0a0a0a !important; }
-    @keyframes mapPulse {
-      0%,100% { box-shadow: 0 0 0 4px rgba(124,92,252,.25), 0 0 24px rgba(124,92,252,.4); }
-      50%      { box-shadow: 0 0 0 10px rgba(124,92,252,.08), 0 0 40px rgba(0,194,255,.35); }
-    }
-
-    /* ── mobile nav ── */
-    @media (max-width: 767px) {
-      .nav-pill { display: none; }
-      #nav-mobile-btn { display: flex; }
-      #nav-mobile-menu { display: none; flex-direction: column; gap: 0; }
-      #nav-mobile-menu.open { display: flex; }
-    }
-    @media (min-width: 768px) {
-      #nav-mobile-btn { display: none; }
-      #nav-mobile-menu { display: none !important; }
-      .nav-pill { display: flex; }
-    }
-    #nav-mobile-btn {
-      display: none; align-items: center; justify-content: center;
-      width: 36px; height: 36px; cursor: pointer; background: none; border: none;
-      padding: 0; flex-direction: column; gap: 5px;
-    }
-    #nav-mobile-btn span {
-      display: block; width: 22px; height: 1.5px; background: #fff;
-      transition: transform .25s, opacity .25s;
-    }
-    #nav-mobile-menu {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,.97); z-index: 200; padding: 100px 40px 40px;
-    }
-    #nav-mobile-menu a {
-      display: block; font-family: "DM Serif Display", serif;
-      font-size: 2.2rem; color: #fff; text-decoration: none;
-      padding: 16px 0; border-bottom: 1px solid #1a1a1a;
-      transition: color .2s;
-    }
-    #nav-mobile-menu a:hover { color: #7C5CFC; }
-    #nav-close {
-      position: absolute; top: 28px; right: 32px;
-      background: none; border: none; color: #666; font-size: 1.5rem;
-      cursor: pointer; padding: 4px;
-    }
-
-    /* ── edu grid ── */
-    .edu-grid { display: grid; grid-template-columns: repeat(3,1fr); border: 1px solid #1c1c1c; }
-    .edu-card { padding: 44px; border-right: 1px solid #1c1c1c; transition: background .3s; }
-    .edu-card:last-child { border-right: none; }
-    .edu-card:hover { background: #080808; }
-    @media(max-width:768px){ .edu-grid{grid-template-columns:1fr;} .edu-card{border-right:none;border-bottom:1px solid #1c1c1c;} .edu-card:last-child{border-bottom:none;} }
-
-    /* ── contact links ── */
-    .clink { display: inline-flex; align-items: center; gap: 10px; color: #777; font-size: .85rem; text-decoration: none; transition: color .22s; }
-    .clink .arr { display: inline-block; transition: transform .25s cubic-bezier(.16,1,.3,1); }
-    .clink:hover { color: #fff; }
-    .clink:hover .arr { transform: translate(4px,-4px); }
-
-    /* ── section header ── */
-    .sec-label { font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: #7C5CFC; margin-bottom: 12px; }
-    .sec-h { font-size: clamp(2.6rem,5.5vw,4.2rem); letter-spacing: -.035em; font-weight: 400; }
-    .sec-num { font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: #2a2a2a; padding-top: 4px; }
-  </style>
-  <script>
-    if (location.search.includes('preview')) {
-      document.addEventListener('DOMContentLoaded', () => {
-        const s = document.createElement('style');
-        s.textContent = '.rv{opacity:1!important;transform:none!important;transition:none!important;} .hero-center{opacity:1!important;transform:none!important;} .lbar-fill{transition:none!important;}';
-        document.head.appendChild(s);
-        document.querySelectorAll('.rv,.hero-center').forEach(e => e.classList.add('in'));
-        document.querySelectorAll('.lbar-fill').forEach(b => { b.style.width = b.dataset.w; });
-      });
-    }
-  </script>
+@media (max-width:899px){
+  .intro{width:auto;right:4%;bottom:5%}
+  .title{font-size:30px}
+  .lede{font-size:14.5px;max-width:none}
+  .hot{--w:16%!important;--h:13%!important}
+  .r-grid{grid-template-columns:1fr;gap:18px}
+  .closeX{top:8px;right:8px;background:rgba(46,33,28,.8);color:var(--paper)}
+}
+@media (prefers-reduced-motion:reduce){
+  .hot[data-hint=true] .ring{animation:none}
+  .panel{transition:none}
+}
+</style>
 </head>
-<body class="bg-black text-white font-sans overflow-x-hidden">
+<body>
 
-  <!-- top gradient bar -->
-  <div class="fixed top-0 left-0 right-0 h-px z-50 g-line opacity-60"></div>
+<div class="page">
+  <div class="stage">
+    <div class="scene">
+      <div class="frame" id="frame">
+        <div class="loading" id="loading">Setting up the office</div>
+      </div>
+    </div>
+    <div class="scrim"></div>
 
-  <!-- ══════════════════════════════════════════
-       NAV — pill with sliding gradient indicator
-  ══════════════════════════════════════════ -->
-  <nav id="nav" class="fixed top-0 left-0 right-0 flex items-center justify-between px-10"
-       style="z-index:999;padding-top:26px;padding-bottom:26px;transition:padding .4s,background .4s,border-color .4s;border-bottom:1px solid transparent;">
+    <button class="hot" data-open="work" type="button" aria-label="Open selected work"><span class="ring"></span><span class="chip">Selected work</span></button>
+    <button class="hot" data-open="services" type="button" aria-label="Open services"><span class="ring"></span><span class="chip">Services</span></button>
+    <button class="hot" data-open="contact" type="button" aria-label="Open contact"><span class="ring"></span><span class="chip">Say hello</span></button>
+    <button class="hot" data-open="about" type="button" aria-label="Open about me"><span class="ring"></span><span class="chip">About me</span></button>
+    <button class="hot" data-open="resume" type="button" aria-label="Open résumé"><span class="ring"></span><span class="chip">Résumé</span></button>
+    <button class="hot" data-open="languages" type="button" aria-label="Open languages"><span class="ring"></span><span class="chip">Languages</span></button>
+    <button class="hot" data-open="beyond" type="button" aria-label="Open beyond work"><span class="ring"></span><span class="chip">Beyond work</span></button>
 
-    <a href="#" class="font-serif text-xl tracking-tight text-white no-underline" style="position:relative;z-index:1000;">GT</a>
-
-    <!-- desktop pill -->
-    <div class="nav-pill" id="nav-pill" style="position:relative;z-index:1000;">
-      <span id="nav-slider"></span>
-      <a href="#about"      class="nav-tab">About</a>
-      <a href="#experience" class="nav-tab">Experience</a>
-      <a href="#education"  class="nav-tab">Education</a>
-      <a href="#skills"     class="nav-tab">Skills</a>
-      <a href="#location"   class="nav-tab">Location</a>
-      <a href="#contact"    class="nav-tab">Contact</a>
+    <div class="actions" id="actions">
+      <button class="pill" id="hints" type="button" aria-pressed="false">Hints</button>
+      <button class="pill" id="menubtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="panel">Menu</button>
     </div>
 
-    <!-- right side: say hello + mobile button -->
-    <div style="display:flex;align-items:center;gap:16px;position:relative;z-index:1000;">
-      <a href="mailto:giovannitognetto.uni@gmail.com"
-         style="font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#666;border:1px solid #222;border-radius:100px;padding:8px 20px;text-decoration:none;transition:color .2s,border-color .2s;"
-         onmouseover="this.style.color='#fff';this.style.borderColor='#7C5CFC';"
-         onmouseout="this.style.color='#666';this.style.borderColor='#222';">
-        Say hello
-      </a>
-      <button id="nav-mobile-btn" onclick="document.getElementById('nav-mobile-menu').classList.toggle('open')" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+    <div class="intro">
+      <h1 class="title">Welcome to my office</h1>
+      <p class="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
+      <div class="counter" id="counter">0 of 7 discovered</div>
     </div>
-  </nav>
-
-  <!-- mobile fullscreen menu -->
-  <div id="nav-mobile-menu">
-    <button id="nav-close" onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">✕</button>
-    <a href="#about"      onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">About</a>
-    <a href="#experience" onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Experience</a>
-    <a href="#education"  onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Education</a>
-    <a href="#skills"     onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Skills</a>
-    <a href="#location"   onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Location</a>
-    <a href="#contact"    onclick="document.getElementById('nav-mobile-menu').classList.remove('open')">Contact</a>
   </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       HERO — parallax floating images
-  ══════════════════════════════════════════ -->
-  <section id="hero">
-    <!-- floating images layer -->
-    <div class="float-wrap" id="float-wrap">
+<nav class="panel" id="panel" aria-label="Quick links" data-open="false">
+  <div class="panel-head">
+    <span class="panel-title">Quick links</span>
+    <button class="panel-close" type="button" aria-label="Close menu" data-close-panel>×</button>
+  </div>
+  <button class="item" type="button" data-open="about">About me</button>
+  <div class="group">
+    <span class="group-label">Work</span>
+    <button class="item sub" type="button" data-open="work">Selected work</button>
+    <button class="item sub" type="button" data-open="services">Services</button>
+    <a class="item sub" href="/portfolio.html">Full portfolio page</a>
+  </div>
+  <button class="item" type="button" data-open="resume">Résumé</button>
+  <button class="item" type="button" data-open="languages">Languages</button>
+  <button class="item" type="button" data-open="beyond">Beyond work</button>
+  <button class="item" type="button" data-open="contact">Contact</button>
+  <a class="item" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer">Book a call →</a>
+</nav>
 
-      <!-- top-left: concert crowd -->
-      <div class="float-el" data-depth="1.5" style="top:6%;left:4%;">
-        <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=320&q=75"
-             alt="" style="width:150px;height:110px;" />
-      </div>
+<div class="reader" id="reader" data-open="false" role="dialog" aria-modal="true" aria-label="Reader">
+  <div class="reader-scrim" data-close-reader></div>
+  <div class="sheet">
+    <button class="closeX" type="button" aria-label="Close" data-close-reader>✕</button>
+    <div id="reader-body"></div>
+  </div>
+</div>
 
-      <!-- top-center: festival -->
-      <div class="float-el" data-depth="2" style="top:3%;left:28%;">
-        <img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=320&q=75"
-             alt="" style="width:160px;height:210px;" />
-      </div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
 
-      <!-- top-right: conference event -->
-      <div class="float-el" data-depth="1" style="top:4%;right:8%;">
-        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=320&q=75"
-             alt="" style="width:140px;height:185px;" />
-      </div>
+<script type="module">
+import * as T from 'three';
 
-      <!-- Giovanni's photo — right side, medium depth -->
-      <div class="float-el" data-depth="0.7" style="top:18%;right:5%;">
-        <img src="Assets/WhatsApp Image 2024-12-28 at 17.16.14.jpeg"
-             alt="Giovanni Tognetto" style="width:190px;height:240px;" />
-      </div>
+const frame = document.getElementById('frame');
+const loading = document.getElementById('loading');
 
-      <!-- mid-left: music/DJ -->
-      <div class="float-el" data-depth="2.5" style="top:44%;left:2%;">
-        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=320&q=75"
-             alt="" style="width:175px;height:125px;" />
-      </div>
+const scene = new T.Scene();
+scene.background = new T.Color('#2e2620');
+const camera = new T.PerspectiveCamera(30, 16/9, .1, 200);
+const renderer = new T.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(1600, 900, false);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = T.PCFSoftShadowMap;
+renderer.toneMapping = T.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+frame.appendChild(renderer.domElement);
 
-      <!-- mid-right small: city -->
-      <div class="float-el" data-depth="1.5" style="top:48%;right:22%;">
-        <img src="https://images.unsplash.com/photo-1543783207-ec64e4d95325?w=320&q=75"
-             alt="" style="width:115px;height:150px;" />
-      </div>
+const mat = (c, r = .78, m = 0) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:m});
+function box(w,h,d,c,x,y,z,material){
+  const o = new T.Mesh(new T.BoxGeometry(w,h,d), material || mat(c));
+  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true; scene.add(o); return o;
+}
+function cyl(rt,rb,h,c,x,y,z,seg=24){
+  const o = new T.Mesh(new T.CylinderGeometry(rt,rb,h,seg), mat(c));
+  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true; scene.add(o); return o;
+}
+function sph(r,c,x,y,z){
+  const o = new T.Mesh(new T.SphereGeometry(r,32,24), mat(c,.6));
+  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true; scene.add(o); return o;
+}
 
-      <!-- bottom-left large: festival crowd -->
-      <div class="float-el" data-depth="3" style="bottom:9%;left:12%;">
-        <img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&q=75"
-             alt="" style="width:230px;height:150px;" />
-      </div>
+/* room */
+box(60,26,1,'#413a30',0,9,-4).castShadow = false;
+box(60,1,16,'#241f19',0,-4.5,4).castShadow = false;
 
-      <!-- bottom-right: event people -->
-      <div class="float-el" data-depth="2" style="bottom:7%;right:5%;">
-        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=320&q=75"
-             alt="" style="width:170px;height:220px;" />
-      </div>
+/* light */
+scene.add(new T.HemisphereLight(0xffe9c9, 0x2a221a, .55));
+const key = new T.DirectionalLight(0xffe2b0, 2.1);
+key.position.set(-9,13,10); key.castShadow = true;
+key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0012; key.shadow.radius = 4;
+Object.assign(key.shadow.camera,{left:-22,right:22,top:18,bottom:-14,near:1,far:50});
+scene.add(key);
+const fill = new T.DirectionalLight(0xd8b98a, .45);
+fill.position.set(10,5,9); scene.add(fill);
+const glow = new T.PointLight(0xffd9a0, 22, 26, 2);
+glow.position.set(-7.5,8.5,1.5); scene.add(glow);
 
-    </div>
+/* desk */
+const deskY = -1.2, dx = -7.2;
+box(13,.5,5.4,'#6f4a2c',dx,deskY,1.6);
+box(12,.5,.6,'#5a3b22',dx,deskY-.55,-.7);
+box(.6,6,.6,'#5a3b22',dx-6,deskY-3.2,3.6);
+box(.6,6,.6,'#5a3b22',dx+6,deskY-3.2,3.6);
+box(.6,6,.6,'#54371f',dx-6,deskY-3.2,-.4);
+box(.6,6,.6,'#54371f',dx+6,deskY-3.2,-.4);
+box(11.4,.35,3.6,'#5a3b22',dx,deskY-3.1,1.6);
 
-    <!-- center text -->
-    <div class="hero-center" id="hero-center">
-      <p style="font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#7C5CFC;margin-bottom:20px;font-weight:600;">
-        Partner Management Associate &nbsp;·&nbsp; Fever &nbsp;·&nbsp; Madrid
-      </p>
-      <h1 class="font-serif font-normal text-white"
-          style="font-size:clamp(4rem,10vw,8.5rem);letter-spacing:-.04em;line-height:1;margin-bottom:0;">
-        Giovanni
-      </h1>
-      <h1 class="font-serif font-normal"
-          style="font-size:clamp(4rem,10vw,8.5rem);letter-spacing:-.04em;line-height:1;font-style:italic;"
-          class="g-text">
-        <span class="g-text">Tognetto</span>
-      </h1>
-      <div class="g-line mt-6 mb-5 mx-auto" style="width:64px;height:1px;"></div>
-      <p style="font-size:.82rem;letter-spacing:.1em;color:#888;font-weight:400;text-transform:uppercase;">
-        Events &amp; Entertainment &nbsp;/&nbsp; Spain
-      </p>
-    </div>
+/* laptop */
+box(5.4,.3,3.6,'#b9b2a6',dx-.4,deskY+.4,2.2);
+const lid = new T.Group();
+const lidBack = new T.Mesh(new T.BoxGeometry(5.4,3.3,.25), mat('#2b2721'));
+lidBack.position.y = 1.65; lidBack.castShadow = true; lid.add(lidBack);
+const screen = new T.Mesh(new T.BoxGeometry(4.9,2.85,.06), mat('#0c0a07',.5));
+screen.position.set(0,1.65,.16); lid.add(screen);
+[['#b23a2f',.5,-1.6],['#d9b24c',.95,-.75],['#5e9e79',1.45,.1],['#7c6bd8',2,.95]].forEach(([c,h,x])=>{
+  const b = new T.Mesh(new T.BoxGeometry(.52,h,.04), mat(c,.5));
+  b.position.set(x,.55+h/2,.2); lid.add(b);
+});
+lid.position.set(dx-.4, deskY+.5, .45); lid.rotation.x = -.16; scene.add(lid);
 
-    <!-- scroll cue -->
-    <div class="drop absolute flex flex-col items-center gap-2 z-30"
-         style="bottom:2.5rem;left:50%;transform:translateX(-50%);">
-      <p style="font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#444;">Scroll to explore</p>
-      <div class="g-line" style="width:1px;height:28px;opacity:.4;"></div>
-    </div>
-  </section>
+/* notebook + mug */
+const nb = box(2.6,.22,1.9,'#f0c64a',dx+3.9,deskY+.36,2.5); nb.rotation.y = -.22;
+for (let i=0;i<3;i++){ const l = box(1.8,.03,.1,'#241f19',dx+3.95,deskY+.48,2.1+i*.45); l.rotation.y = -.22; }
+cyl(.42,.42,.85,'#f6f1e6',dx-4.6,deskY+.68,2.6);
 
-  <!-- ══════════════════════════════════════════
-       01 — ABOUT
-  ══════════════════════════════════════════ -->
-  <section id="about" class="bg-black py-32 px-12 md:px-20">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex gap-14 md:gap-20">
-        <span class="rv sec-num shrink-0">01</span>
-        <div class="flex-1">
-          <p class="rv sec-label">About</p>
-          <p class="rv d1 font-serif font-normal" style="font-size:clamp(1.5rem,3vw,2.4rem);color:#d0d0d0;max-width:840px;line-height:1.55;">
-            Partner Manager specialized in building and scaling
-            <span class="g-text">high-impact partnerships</span>
-            within the events and entertainment space. Combining a
-            <span class="g-text">commercial mindset</span>
-            with data-driven decision making to turn partnerships into measurable success.
-          </p>
-          <div class="rv d2 mt-16 grid grid-cols-3 gap-10" style="max-width:500px;">
-            <div>
-              <p class="font-serif text-white" style="font-size:2.6rem;letter-spacing:-.04em;line-height:1;">20+</p>
-              <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:6px;">Active Projects</p>
-            </div>
-            <div>
-              <p class="font-serif text-white" style="font-size:2.6rem;letter-spacing:-.04em;line-height:1;">500+</p>
-              <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:6px;">Deals Analyzed</p>
-            </div>
-            <div>
-              <p class="font-serif text-white" style="font-size:2.6rem;letter-spacing:-.04em;line-height:1;">150K+</p>
-              <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:6px;">Event Attendees</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+/* bookcase */
+const hx = 7.6, bw = 11, bd = 3.4;
+box(bw,.5,bd,'#d9a823',hx,-4,2);
+[-0.5,3,6.5,9.6].forEach(y => box(bw,.5,bd,'#f0c64a',hx,y,2));
+box(.5,13,bd,'#e0b32f',hx-5.3,2.8,2);
+box(.5,13,bd,'#e0b32f',hx+5.3,2.8,2);
+box(.5,13,bd,'#e7ba33',hx,2.8,2);
+box(bw,13,.3,'#a8831b',hx,2.8,.5).castShadow = false;
 
-  <!-- ══════════════════════════════════════════
-       02 — EXPERIENCE
-  ══════════════════════════════════════════ -->
-  <section id="experience" style="background:#060606;" class="py-32 px-12 md:px-20">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex gap-14 md:gap-20 mb-20">
-        <span class="rv sec-num shrink-0">02</span>
-        <div>
-          <p class="rv sec-label">Career</p>
-          <h2 class="rv d1 font-serif sec-h">Experience</h2>
-        </div>
-      </div>
+function books(bx,by,bz,n,s){
+  const cl = ['#8e3b32','#3e5e7e','#d9b24c','#5e7a4f','#a6512e','#6b5aa6','#c9c0ad'];
+  for (let j=0;j<n;j++){
+    const h = 1.5+(j%3)*.35, w = .22+(j%4)*.07;
+    box(w,h,1.5,cl[(j+s)%7],bx+j*.42,by+h/2,bz);
+  }
+}
+books(hx-4.9,9.85,2.2,9,0); books(hx+.5,9.85,2.2,5,3);
+books(hx-4.9,6.75,2.2,6,2); books(hx-4.9,3.25,2.2,4,5);
 
-      <!-- Fever -->
-      <div class="rv exp-row">
-        <div class="grid grid-cols-12 gap-8 md:gap-16">
-          <div class="col-span-12 md:col-span-4 mb-4 md:mb-0">
-            <p class="font-serif text-white" style="font-size:1.5rem;">Fever</p>
-            <p style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:4px;">Technology · Madrid, Spain</p>
-          </div>
-          <div class="col-span-12 md:col-span-8 space-y-8">
-            <div>
-              <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-                <p class="text-sm font-medium" style="color:#e0e0e0;">Partner Management Associate</p>
-                <p style="font-size:.7rem;letter-spacing:.08em;color:#7C5CFC;">Aug 2025 — Present</p>
-              </div>
-              <ul class="space-y-2">
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managing 20+ projects across Europe and Asia, driving end-to-end execution and exceeding partner expectations.</li>
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Acting as primary point of contact for 15+ key partners, strengthening relationships and launching 20+ events.</li>
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Leading 10+ marketing campaigns alongside Operations and Marketing teams.</li>
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Analyzed partner performance to identify growth opportunities; won 5+ new partners alongside Sales.</li>
-              </ul>
-            </div>
-            <div style="padding-top:20px;border-top:1px solid #191919;">
-              <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-                <p class="text-sm font-medium" style="color:#e0e0e0;">Market Research Analyst</p>
-                <p style="font-size:.7rem;letter-spacing:.08em;color:#666;">Sep 2024 — Aug 2025</p>
-              </div>
-              <ul class="space-y-2">
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Analyzed 500+ potential business opportunities using market intelligence to identify high-value clients.</li>
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managed CRM system with 500+ accounts, increasing efficiency of lead tracking and partner engagement.</li>
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Assisted in negotiating 50+ new partnerships with major producers and venues across 10+ countries.</li>
-                <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Developed 50+ market research strategies identifying new partners in new territories.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+/* basketball */
+const ball = sph(1.05,'#d1762b',hx-3.2,.6,2.2);
+const seamGeo = new T.TorusGeometry(1.05,.045,8,40);
+const seam = new T.Mesh(seamGeo, mat('#241f19')); seam.position.copy(ball.position); scene.add(seam);
+const seam2 = new T.Mesh(seamGeo, mat('#241f19')); seam2.position.copy(ball.position); seam2.rotation.y = Math.PI/2; scene.add(seam2);
 
-      <!-- RDS -->
-      <div class="rv exp-row">
-        <div class="grid grid-cols-12 gap-8 md:gap-16">
-          <div class="col-span-12 md:col-span-4 mb-4 md:mb-0">
-            <p class="font-serif text-white" style="font-size:1.5rem;">RDS</p>
-            <p style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:4px;">Radio Dimensione Suono · Milan, Italy</p>
-          </div>
-          <div class="col-span-12 md:col-span-8">
-            <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-              <p class="text-sm font-medium" style="color:#e0e0e0;">Special Initiatives — Marketing Intern</p>
-              <p style="font-size:.7rem;letter-spacing:.08em;color:#666;">Jan 2023 — Jul 2023</p>
-            </div>
-            <ul class="space-y-2">
-              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Executed 40+ marketing activations for top automotive brands including Ferrari and Porsche.</li>
-              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managed the RDS Summer Festival across 12 Italian locations — 150,000+ attendees.</li>
-              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Networking with 50+ sponsors and stakeholders; built media plans, finances and budgets.</li>
-              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Executed 15+ on-site events including music festivals, sports events, and marathons.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+/* globe */
+sph(.95,'#2e6e8e',hx+2.6,4.25,2.2);
+cyl(.5,.6,.28,'#241f19',hx+2.6,3.4,2.2);
 
-      <!-- Illy -->
-      <div class="rv exp-row">
-        <div class="grid grid-cols-12 gap-8 md:gap-16">
-          <div class="col-span-12 md:col-span-4 mb-4 md:mb-0">
-            <p class="font-serif text-white" style="font-size:1.5rem;">illycaffè</p>
-            <p style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-top:4px;">Food &amp; Beverage · Trieste, Italy</p>
-          </div>
-          <div class="col-span-12 md:col-span-8">
-            <div class="flex items-baseline justify-between flex-wrap gap-2 mb-4">
-              <p class="text-sm font-medium" style="color:#e0e0e0;">Project Management Intern</p>
-              <p style="font-size:.7rem;letter-spacing:.08em;color:#666;">Mar 2021 — May 2021</p>
-            </div>
-            <ul class="space-y-2">
-              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">8+ benchmark analyses on sustainability and product lifecycle — 5% reduction in packaging waste.</li>
-              <li class="ebullet text-sm leading-relaxed" style="color:#aaa;">Managed product lifecycle and innovation strategies, increasing sales revenue by 7%.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+/* rotary phone */
+const phone = new T.Group();
+const body = new T.Mesh(new T.BoxGeometry(2.3,.75,1.5), mat('#e58fa0',.55));
+body.castShadow = body.receiveShadow = true; phone.add(body);
+const dial = new T.Mesh(new T.CylinderGeometry(.62,.62,.12,28), mat('#f3b7c2',.5));
+dial.rotation.x = Math.PI/2; dial.position.set(0,.15,.78); dial.castShadow = true; phone.add(dial);
+const handset = new T.Mesh(new T.CapsuleGeometry(.26,1.7,6,12), mat('#f0a4b3',.5));
+handset.rotation.z = Math.PI/2; handset.position.set(0,.62,-.1); handset.castShadow = true; phone.add(handset);
+phone.position.set(hx+2.6,.05,2.1); phone.rotation.y = -.2; scene.add(phone);
 
-    </div>
-  </section>
+/* wall shelf, plant, frames */
+const shY = 7.4, sx = -8.4;
+box(7.4,.4,1.6,'#f0c64a',sx,shY,-2.4);
+cyl(.78,.6,.9,'#1f1a12',sx-2.1,shY+.65,-2.3);
+const vines = new T.Group();
+for (let i=0;i<5;i++){
+  const a = (i/5)*Math.PI*2, L = 1.6+(i%3)*.9;
+  const v = new T.Mesh(new T.CylinderGeometry(.045,.045,L,6), mat('#5e9c47'));
+  v.position.set(Math.cos(a)*.5,-L/2,Math.sin(a)*.35); v.rotation.z = Math.cos(a)*.25; v.castShadow = true; vines.add(v);
+  const leaf = new T.Mesh(new T.SphereGeometry(.2,10,8), mat('#7cc05a'));
+  leaf.scale.set(1,.45,1); leaf.position.set(Math.cos(a)*.62,-L,Math.sin(a)*.4); leaf.castShadow = true; vines.add(leaf);
+}
+vines.position.set(sx-2.1, shY+.2, -2.3); scene.add(vines);
+function picture(x,y,w,h,c){ box(w,h,.18,'#efe7d6',x,y,-2.1); box(w-.5,h-.5,.06,c,x,y,-1.98); }
+picture(sx+.9, shY+1.4, 1.9, 2.1, '#8c7b64');
+picture(sx+3, shY+1.3, 1.7, 1.8, '#5c6b7a');
 
-  <!-- ══════════════════════════════════════════
-       03 — EDUCATION
-  ══════════════════════════════════════════ -->
-  <section id="education" class="bg-black py-32 px-12 md:px-20">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex gap-14 md:gap-20 mb-20">
-        <span class="rv sec-num shrink-0">03</span>
-        <div>
-          <p class="rv sec-label">Academic</p>
-          <h2 class="rv d1 font-serif sec-h">Education</h2>
-        </div>
-      </div>
-      <div class="edu-grid rv">
-        <div class="edu-card">
-          <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#444;margin-bottom:28px;">2023 — 2024</p>
-          <p class="font-serif leading-tight mb-3" style="font-size:1.4rem;color:#fff;">IE Business School</p>
-          <p class="text-sm mb-5" style="color:#999;">Master's in Digital Marketing &amp; Analytics</p>
-          <div class="g-line mb-5" style="height:1px;opacity:.15;"></div>
-          <p class="text-xs leading-loose" style="color:#666;">Top Student · IE Immersion Week Amsterdam · Salesforce Certificate · Google Analytics Certificate</p>
-          <p style="font-size:.68rem;letter-spacing:.1em;color:#444;margin-top:16px;">Madrid, Spain</p>
-        </div>
-        <div class="edu-card">
-          <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#444;margin-bottom:28px;">2021 — 2022</p>
-          <p class="font-serif leading-tight mb-3" style="font-size:1.4rem;color:#fff;">UPF Barcelona School of Management</p>
-          <p class="text-sm mb-5" style="color:#999;">Master's in Marketing</p>
-          <div class="g-line mb-5" style="height:1px;opacity:.15;"></div>
-          <p class="text-xs leading-loose" style="color:#666;">Class Representative</p>
-          <p style="font-size:.68rem;letter-spacing:.1em;color:#444;margin-top:16px;">Barcelona, Spain</p>
-        </div>
-        <div class="edu-card">
-          <p style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#444;margin-bottom:28px;">2018 — 2021</p>
-          <p class="font-serif leading-tight mb-3" style="font-size:1.4rem;color:#fff;">Università Bocconi</p>
-          <p class="text-sm mb-5" style="color:#999;">Bachelor's in Business Administration &amp; Management</p>
-          <div class="g-line mb-5" style="height:1px;opacity:.15;"></div>
-          <p class="text-xs leading-loose" style="color:#666;">ESADE International Summer Program · Arabic course (Bocconi)</p>
-          <p style="font-size:.68rem;letter-spacing:.1em;color:#444;margin-top:16px;">Milan, Italy</p>
-        </div>
-      </div>
-    </div>
-  </section>
+camera.position.set(0,4.6,27);
+camera.lookAt(0,2.2,0);
+renderer.render(scene,camera);
+loading.remove();
+</script>
 
-  <!-- ══════════════════════════════════════════
-       04 — SKILLS
-  ══════════════════════════════════════════ -->
-  <section id="skills" style="background:#060606;" class="py-32 px-12 md:px-20">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex gap-14 md:gap-20 mb-20">
-        <span class="rv sec-num shrink-0">04</span>
-        <div>
-          <p class="rv sec-label">Toolkit</p>
-          <h2 class="rv d1 font-serif sec-h">Skills</h2>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-16">
-        <div class="rv">
-          <p style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:24px;font-weight:600;">Analytics &amp; Data</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="tag">Google Analytics</span><span class="tag">Google Ads</span>
-            <span class="tag">Tableau</span><span class="tag">SQL</span>
-            <span class="tag">Python</span><span class="tag">Excel</span>
-          </div>
-        </div>
-        <div class="rv d1">
-          <p style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:24px;font-weight:600;">CRM &amp; Marketing</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="tag">Salesforce</span><span class="tag">SEO &amp; SEM</span>
-            <span class="tag">Microsoft Office</span><span class="tag">Market Research</span>
-            <span class="tag">Media Planning</span>
-          </div>
-        </div>
-        <div class="rv d2">
-          <p style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:24px;font-weight:600;">Soft Skills</p>
-          <div class="flex flex-wrap gap-2">
-            <span class="tag">Partnership Mgmt</span><span class="tag">Negotiation</span>
-            <span class="tag">Event Execution</span><span class="tag">Stakeholder Relations</span>
-            <span class="tag">Project Management</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var reader = document.getElementById('reader'),
+      body = document.getElementById('reader-body'),
+      panel = document.getElementById('panel'),
+      menubtn = document.getElementById('menubtn'),
+      hintbtn = document.getElementById('hints'),
+      actions = document.getElementById('actions'),
+      counter = document.getElementById('counter'),
+      hots = [].slice.call(document.querySelectorAll('.hot'));
 
-  <!-- ══════════════════════════════════════════
-       05 — LANGUAGES
-  ══════════════════════════════════════════ -->
-  <section class="bg-black py-32 px-12 md:px-20">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex gap-14 md:gap-20 mb-20">
-        <span class="rv sec-num shrink-0">05</span>
-        <div>
-          <p class="rv sec-label">Communication</p>
-          <h2 class="rv d1 font-serif sec-h">Languages</h2>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-14">
-        <div class="rv lang-item">
-          <div class="flex items-baseline justify-between mb-4">
-            <p class="font-serif text-white" style="font-size:1.3rem;">Italian</p>
-            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Native</p>
-          </div>
-          <div class="lbar"><div class="lbar-fill" data-w="100%"></div></div>
-        </div>
-        <div class="rv d1 lang-item">
-          <div class="flex items-baseline justify-between mb-4">
-            <p class="font-serif text-white" style="font-size:1.3rem;">English</p>
-            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Native</p>
-          </div>
-          <div class="lbar"><div class="lbar-fill" data-w="100%"></div></div>
-        </div>
-        <div class="rv d2 lang-item">
-          <div class="flex items-baseline justify-between mb-4">
-            <p class="font-serif text-white" style="font-size:1.3rem;">Spanish</p>
-            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Fluent</p>
-          </div>
-          <div class="lbar"><div class="lbar-fill" data-w="84%"></div></div>
-        </div>
-        <div class="rv d3 lang-item">
-          <div class="flex items-baseline justify-between mb-4">
-            <p class="font-serif text-white" style="font-size:1.3rem;">French</p>
-            <p style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#555;">Beginner</p>
-          </div>
-          <div class="lbar"><div class="lbar-fill" data-w="22%"></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
+  var CAL = 'https://calendar.app.google/UVRpSX8X4jy7VhyV8',
+      MAIL = 'giovannitognetto.uni@gmail.com',
+      LI = 'https://www.linkedin.com/in/giovannitognetto';
 
-  <!-- ══════════════════════════════════════════
-       06 — LOCATION
-  ══════════════════════════════════════════ -->
-  <section id="location" style="background:#060606;" class="py-32 px-12 md:px-20">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex gap-14 md:gap-20 mb-16">
-        <span class="rv sec-num shrink-0">06</span>
-        <div class="flex-1">
-          <p class="rv sec-label">Base</p>
-          <h2 class="rv d1 font-serif sec-h">Madrid, Spain</h2>
-          <p class="rv d2 mt-4" style="font-size:.85rem;color:#555;line-height:1.7;max-width:480px;">
-            Currently based in Madrid — working across Europe and beyond from the heart of Spain.
-          </p>
-        </div>
-      </div>
-      <div class="rv d3" style="border:1px solid #1c1c1c;border-radius:4px;overflow:hidden;">
-        <div id="madrid-map"></div>
-      </div>
-    </div>
-  </section>
+  function head(n,r){ return '<h2 class="r-name">'+n+'</h2><p class="r-role">'+r+'</p><div class="r-rule"></div>'; }
+  function cta(h,t,blank){ return '<a class="cta" href="'+h+'"'+(blank?' target="_blank" rel="noreferrer"':'')+'>'+t+'</a>'; }
 
-  <!-- ══════════════════════════════════════════
-       CONTACT
-  ══════════════════════════════════════════ -->
-  <section id="contact" class="relative py-48 px-12 md:px-20 overflow-hidden" style="background:#000;">
-    <div class="pointer-events-none absolute" style="width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,252,.1) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-    <div class="max-w-6xl mx-auto relative z-10 text-center">
-      <p class="rv sec-label" style="text-align:center;">Get in touch</p>
-      <h2 class="rv d1 font-serif font-normal" style="font-size:clamp(3.5rem,10vw,8rem);letter-spacing:-.04em;line-height:1;margin-bottom:4rem;">
-        Let's<br/><span class="g-text">talk.</span>
-      </h2>
-      <div class="rv d2 flex flex-col md:flex-row items-center justify-center gap-12 mb-16">
-        <a href="mailto:giovannitognetto.uni@gmail.com" class="clink">
-          <span>giovannitognetto.uni@gmail.com</span><span class="arr">↗</span>
-        </a>
-        <span style="color:#222;" class="max-md:hidden">|</span>
-        <a href="tel:+393459246870" class="clink">
-          <span>(+39) 345 924 6870</span><span class="arr">↗</span>
-        </a>
-        <span style="color:#222;" class="max-md:hidden">|</span>
-        <a href="https://www.linkedin.com/in/giovannitognetto" target="_blank" rel="noopener" class="clink">
-          <span>LinkedIn</span><span class="arr">↗</span>
-        </a>
-      </div>
-      <div class="rv d3 g-line mx-auto" style="height:1px;max-width:200px;opacity:.25;"></div>
-    </div>
-  </section>
+  var C = {
+    work: head('Selected work','Partnerships · Events · Data') +
+      '<div class="r-grid"><div>'+
+      '<div class="r-block"><h3 class="r-h">30+ live events across Europe</h3><p class="r-meta">Fever · Madrid · 2024–present</p><p class="r-p">Managed the end-to-end lifecycle of live events, from post-contract handoff to final closing, coordinating 5+ internal teams and launching concerts and sport events. Main point of contact for 15+ key partners.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">A national festival, 12 cities</h3><p class="r-meta">RDS · Italy · 2023</p><p class="r-p">Managed the RDS Summer Festival across 12 locations with 150,000+ attendees, 40+ marketing activations and 50+ sponsor and stakeholder relationships, including media plans and budgets.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">Finding the next big partners</h3><p class="r-meta">Fever · Madrid · 2024–2025</p><p class="r-p">Analyzed 500+ opportunities across 10+ countries, managed a 500+ account CRM and supported the negotiation of 50+ new partnerships with producers and venues.</p></div>'+
+      '</div><div><p class="r-lab">In numbers</p><ul class="r-ul"><li>30+ live events</li><li>15+ key partners</li><li>500+ opportunities analyzed</li><li>150K+ festival attendees</li><li>10+ countries</li></ul>'+cta('/portfolio.html','Full portfolio')+'</div></div>',
 
-  <!-- ══════════════════════════════════════════
-       FOOTER
-  ══════════════════════════════════════════ -->
-  <footer class="px-12 py-7 flex items-center justify-between" style="border-top:1px solid #111;">
-    <span class="font-serif" style="font-size:.85rem;color:#2e2e2e;">Giovanni Tognetto</span>
-    <span style="font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#222;">Madrid · EU Citizen · 2026</span>
-  </footer>
+    services: head('What I can do for you','Freelance services') +
+      '<div class="r-grid"><div>'+
+      '<div class="r-block"><h3 class="r-h">Partnership management</h3><p class="r-p">Find, onboard and grow partners. I run the whole relationship, from the signed contract to the final closing.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">Marketing &amp; campaigns</h3><p class="r-p">Plan and launch campaigns and brand activations with clear, measurable results.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">Data &amp; market research</h3><p class="r-p">Market scans, CRM clean-up, performance analysis and opportunity sizing, so decisions rest on data.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">Event execution</h3><p class="r-p">End-to-end delivery of live events, from planning and coordination to on-site execution and closing.</p></div>'+
+      '</div><div><p class="r-lab">Good fit for</p><ul class="r-ul"><li>Events &amp; entertainment companies</li><li>Startups and scaleups</li><li>Small businesses</li></ul>'+cta(CAL,'Book a free call',1)+'</div></div>',
 
-  <!-- ══════════════════════════════════════════
-       JAVASCRIPT
-  ══════════════════════════════════════════ -->
-  <script>
-    // ── NAV: scroll shrink ──
-    const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => {
-      const s = window.scrollY > 60;
-      nav.style.paddingTop    = s ? '14px' : '26px';
-      nav.style.paddingBottom = s ? '14px' : '26px';
-      nav.style.background    = s ? 'rgba(0,0,0,.9)' : 'transparent';
-      nav.style.backdropFilter= s ? 'blur(20px)' : 'none';
-      nav.style.borderBottomColor = s ? '#151515' : 'transparent';
-    });
+    about: head('Hi, I’m Giovanni','Italian in Madrid') +
+      '<div class="r-grid"><div>'+
+      '<p class="r-p">I am a partner manager and marketer living in Madrid. I work with events, entertainment and fast-growing brands, turning partnerships into things that actually happen: campaigns that launch, events that run, numbers that add up.</p>'+
+      '<p class="r-p">I studied at Bocconi, UPF Barcelona and IE Business School, where I was picked as top student for the Global Immersion Week in Amsterdam. Along the way I have worked at Fever, RDS and illycaffè.</p>'+
+      '<p class="r-p">What I like is the mix of commercial instinct and data: finding the opportunity, then proving it worked.</p>'+
+      '</div><div><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain · EU citizen</p><p class="r-lab">Works across</p><p class="r-p">Europe, remote and on-site</p>'+cta(CAL,'Say hello',1)+'</div></div>',
 
-    // ── NAV: sliding pill indicator ──
-    const pill   = document.getElementById('nav-pill');
-    const slider = document.getElementById('nav-slider');
-    const tabs   = document.querySelectorAll('.nav-tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('mouseenter', () => {
-        slider.style.left    = tab.offsetLeft + 'px';
-        slider.style.width   = tab.offsetWidth + 'px';
-        slider.style.opacity = '1';
-      });
-    });
-    pill && pill.addEventListener('mouseleave', () => {
-      slider.style.opacity = '0';
-    });
+    resume: head('Giovanni Tognetto','Partnerships · Marketing · Data') +
+      '<div class="r-grid"><div><p class="r-lab">Experience</p>'+
+      '<div class="r-block"><h3 class="r-h">Fever</h3><p class="r-meta">Partner Management Associate · Aug 2025 — present</p><p class="r-p">30+ live events end to end, 15+ key partners, 10+ marketing campaigns, 5+ new partner acquisitions.</p><p class="r-meta">Market Research Analyst · Sep 2024 — Aug 2025</p><p class="r-p">500+ opportunities analyzed, 500+ account CRM, 50+ partnerships negotiated.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">RDS — Radio Dimensione Suono</h3><p class="r-meta">Special Initiatives, Marketing Intern · Jan — Jul 2023</p><p class="r-p">RDS Summer Festival in 12 cities, 150,000+ attendees, 40+ activations, 50+ sponsors.</p></div>'+
+      '<div class="r-block"><h3 class="r-h">illycaffè</h3><p class="r-meta">Project Management Intern · Mar — May 2021</p><p class="r-p">8+ benchmark analyses, 5% less packaging waste, 7% revenue increase.</p></div>'+
+      '</div><div><p class="r-lab">Education</p>'+
+      '<p class="r-p"><strong>IE Business School</strong><br>Master’s in Digital Marketing &amp; Analytics (2023–2024) · Top Student</p>'+
+      '<p class="r-p"><strong>UPF Barcelona School of Management</strong><br>Master’s in Marketing (2021–2022) · Class Representative</p>'+
+      '<p class="r-p"><strong>Università Bocconi</strong><br>BSc Business Administration (2018–2021)</p>'+
+      '<p class="r-lab">Tools</p><p class="r-p">Salesforce · Google Analytics · Google Ads · SQL · Python · Tableau · Excel</p>'+
+      cta(CAL,'Book a free call',1)+'</div></div>',
 
-    // ── PARALLAX FLOATING ──
-    (function() {
-      const hero  = document.getElementById('hero');
-      const floats = Array.from(hero.querySelectorAll('.float-el'));
-      const state  = floats.map(() => ({ x: 0, y: 0 }));
-      let mx = 0, my = 0;
+    languages: head('Languages','Four, and counting') +
+      '<div class="r-grid"><div><p class="r-p">I work in three languages every week, which helps when a partner in Milan, a venue in Madrid and a client in London all need an answer the same afternoon.</p>'+
+      '<ul class="r-ul"><li><strong>Italian</strong> — native</li><li><strong>English</strong> — native</li><li><strong>Spanish</strong> — fluent</li><li><strong>French</strong> — beginner</li></ul></div>'+
+      '<div><p class="r-lab">Works across</p><p class="r-p">Italy, Spain, the UK and the rest of Europe, remote or on-site.</p>'+cta(CAL,'Say hello',1)+'</div></div>',
 
-      hero.addEventListener('mousemove', e => {
-        const r = hero.getBoundingClientRect();
-        mx = e.clientX - r.left  - r.width  / 2;
-        my = e.clientY - r.top   - r.height / 2;
-      });
-      hero.addEventListener('mouseleave', () => { mx = 0; my = 0; });
+    beyond: head('Beyond work','The other half') +
+      '<div class="r-grid"><div><p class="r-p">Fifteen years of basketball at national level, which is where I learned most of what I know about teams, pressure and showing up when it is not fun.</p>'+
+      '<p class="r-p">Formula 1 on Sundays, music most other days, and travelling whenever the calendar allows it.</p></div>'+
+      '<div><p class="r-lab">Ask me about</p><ul class="r-ul"><li>Basketball</li><li>Formula 1</li><li>Live music</li><li>Where to eat in Madrid</li></ul></div></div>',
 
-      function tick() {
-        floats.forEach((el, i) => {
-          const depth = parseFloat(el.dataset.depth) || 1;
-          // inverted parallax: move opposite to cursor (like depth behind screen)
-          const tx = mx * (-depth / 22);
-          const ty = my * (-depth / 22);
-          state[i].x += (tx - state[i].x) * 0.055;
-          state[i].y += (ty - state[i].y) * 0.055;
-          el.style.transform = `translate(${state[i].x}px, ${state[i].y}px)`;
-        });
-        requestAnimationFrame(tick);
-      }
+    contact: head('Let’s build something','Contact') +
+      '<div class="r-grid"><div><p class="r-p">Tell me about your project, your goals and your timeline, and I’ll get back to you. Prefer to talk it through? Grab a free 30-minute slot in my calendar.</p>'+cta(CAL,'Book a free call',1)+'</div>'+
+      '<div><p class="r-lab">Direct</p><p class="r-p"><a href="mailto:'+MAIL+'">'+MAIL+'</a><br><a href="'+LI+'" target="_blank" rel="noreferrer">LinkedIn</a></p><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain</p></div></div>'
+  };
+
+  var found = {};
+  try { found = JSON.parse(localStorage.getItem('gtFound') || '{}'); } catch(e){}
+  function tick(){
+    var n = Object.keys(found).length;
+    counter.textContent = n + ' of ' + hots.length + ' discovered';
+  }
+  tick();
+
+  var lastFocus = null;
+  function open(key){
+    if (!C[key]) return;
+    lastFocus = document.activeElement;
+    body.innerHTML = C[key];
+    reader.setAttribute('data-open','true');
+    document.body.style.overflow = 'hidden';
+    actions.setAttribute('data-hidden','true');
+    if (!found[key]) {
+      found[key] = 1;
+      try { localStorage.setItem('gtFound', JSON.stringify(found)); } catch(e){}
       tick();
+    }
+  }
+  function close(){
+    reader.setAttribute('data-open','false');
+    document.body.style.overflow = '';
+    actions.setAttribute('data-hidden','false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function setPanel(o){
+    panel.setAttribute('data-open', o ? 'true' : 'false');
+    menubtn.setAttribute('aria-expanded', o ? 'true' : 'false');
+  }
 
-      // stagger-in floating images on page load
-      const imgs = hero.querySelectorAll('.float-el img');
-      imgs.forEach((img, i) => {
-        img.style.opacity = '0';
-        setTimeout(() => {
-          img.style.transition = 'opacity 0.55s ease';
-          img.style.opacity = '1';
-        }, 600 + i * 140);
-      });
-    })();
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-open]');
+    if (t && t.classList.contains('hot') || (t && t.classList.contains('item'))) {
+      setPanel(false); open(t.getAttribute('data-open')); return;
+    }
+    if (e.target.closest('[data-close-reader]')) close();
+    if (e.target.closest('[data-close-panel]')) setPanel(false);
+  });
 
-    // ── HERO CENTER: delayed fade-in ──
-    setTimeout(() => {
-      document.getElementById('hero-center').classList.add('in');
-    }, 1300);
+  menubtn.addEventListener('click', function(){
+    setPanel(panel.getAttribute('data-open') !== 'true');
+  });
 
-    // ── SCROLL REVEAL ──
-    const ro = new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) e.target.classList.add('in');
-    }), { threshold: 0.1 });
-    document.querySelectorAll('.rv').forEach(el => ro.observe(el));
+  hintbtn.addEventListener('click', function(){
+    var on = hintbtn.getAttribute('aria-pressed') !== 'true';
+    hintbtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    hots.forEach(function(b){ b.setAttribute('data-hint', on ? 'true' : 'false'); });
+  });
 
-    // ── LANGUAGE BARS ──
-    const lo = new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.querySelectorAll('.lbar-fill').forEach(b =>
-          setTimeout(() => b.style.width = b.dataset.w, 200)
-        );
-        lo.unobserve(e.target);
-      }
-    }), { threshold: 0.6 });
-    document.querySelectorAll('.lang-item').forEach(el => lo.observe(el));
-  </script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    // ── MADRID MAP ──
-    (function() {
-      const mapEl = document.getElementById('madrid-map');
-      const mapObs = new IntersectionObserver(entries => {
-        if (!entries[0].isIntersecting) return;
-        mapObs.disconnect();
+  addEventListener('keydown', function(e){
+    if (e.key === 'Escape') {
+      if (reader.getAttribute('data-open') === 'true') close();
+      else setPanel(false);
+    }
+  });
 
-        const map = L.map('madrid-map', {
-          center: [40.4168, -3.7038],
-          zoom: 13,
-          zoomControl: false,
-          scrollWheelZoom: false,
-          attributionControl: true,
-        });
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" style="color:#444">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" style="color:#444">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 19,
-        }).addTo(map);
-
-        // custom gradient pin
-        const icon = L.divIcon({
-          html: `<div style="
-            width:18px;height:18px;border-radius:50%;
-            background:linear-gradient(135deg,#7C5CFC,#00C2FF);
-            animation:mapPulse 2.4s ease-in-out infinite;
-            position:relative;
-          "><div style="
-            position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-            width:6px;height:6px;border-radius:50%;background:#fff;opacity:.9;
-          "></div></div>`,
-          className: '',
-          iconSize: [18, 18],
-          iconAnchor: [9, 9],
-        });
-
-        L.marker([40.4168, -3.7038], { icon }).addTo(map);
-
-        // style attribution control to match dark theme
-        const attribEl = document.querySelector('.leaflet-control-attribution');
-        if (attribEl) {
-          attribEl.style.background = 'rgba(0,0,0,.7)';
-          attribEl.style.color = '#444';
-          attribEl.style.fontSize = '.6rem';
-        }
-      }, { threshold: 0.1 });
-
-      mapObs.observe(mapEl);
-    })();
-  </script>
+  addEventListener('pointerdown', function(e){
+    if (panel.getAttribute('data-open') === 'true' && !panel.contains(e.target) && e.target !== menubtn) setPanel(false);
+  });
+});
+</script>
 </body>
 </html>
