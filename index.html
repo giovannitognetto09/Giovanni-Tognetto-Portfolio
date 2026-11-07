@@ -15,77 +15,53 @@
   --stage:#2e2620;--ink:#2e211c;--ink-rgb:46 33 28;--scrim-rgb:30 29 27;
   --paper:#f7f0e2;--light:#f5e9d9;--light-rgb:245 233 217;
   --accent:#f0c64a;--brand:#b2364f;
-  --font-display:'Playfair Display',Georgia,serif;--font-ui:'Karla',system-ui,sans-serif;
-  --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --fd:'Playfair Display',Georgia,serif;--fu:'Karla',system-ui,sans-serif;
+  --fm:ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--stage)}
-body{font-family:var(--font-ui);color:var(--light);overflow:hidden}
-a{color:var(--accent);text-decoration:none}
+html,body{margin:0;padding:0;background:var(--stage);height:100%}
+body{font-family:var(--fu);color:var(--light);overflow:hidden}
 
-.page{position:relative;width:100%;height:100dvh;min-height:560px;overflow:hidden}
-.stage{position:absolute;inset:0;container-type:size}
-.scene{position:absolute;inset:0;overflow:hidden}
-.frame{position:absolute;top:50%;left:50%;translate:-50% -50%;
-  width:max(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9}
-.frame canvas{width:100%;height:100%;display:block}
-.loading{position:absolute;inset:0;display:grid;place-items:center;
-  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgb(var(--light-rgb)/.5)}
+.page{position:relative;width:100%;height:100dvh;min-height:520px;overflow:hidden}
+#scene{position:absolute;inset:0}
+#scene canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.loading{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;
+  letter-spacing:.2em;text-transform:uppercase;color:rgb(var(--light-rgb)/.5)}
 .scrim{position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 48% 42% at 14% 90%,rgb(var(--scrim-rgb)/.6) 0%,rgb(var(--scrim-rgb)/.28) 55%,transparent 100%),
-  linear-gradient(0deg,rgb(var(--scrim-rgb)/.8) 0%,rgb(var(--scrim-rgb)/.38) 26%,transparent 46%)}
+  background:radial-gradient(ellipse 46% 40% at 14% 88%,rgb(var(--scrim-rgb)/.55),transparent 100%),
+  linear-gradient(0deg,rgb(var(--scrim-rgb)/.8) 0%,rgb(var(--scrim-rgb)/.34) 26%,transparent 48%)}
 
-.actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:6;transition:opacity .25s}
+/* label follows its object, positioned from 3D each frame */
+.chip{position:absolute;z-index:6;transform:translate(-50%,-140%);
+  padding:5px 13px;border:1.5px solid var(--ink);border-radius:999px;background:var(--accent);color:var(--ink);
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+  opacity:0;transition:opacity .16s;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.chip[data-on=true]{opacity:1}
+
+.actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:7;transition:opacity .25s}
 .actions[data-hidden=true]{opacity:0;visibility:hidden}
 .pill{min-height:44px;padding:0 16px;border-radius:999px;cursor:pointer;
   border:1px solid rgb(var(--light-rgb)/.28);background:rgb(var(--scrim-rgb)/.55);
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  color:var(--light);font-family:var(--font-ui);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  color:var(--light);font-family:var(--fu);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 .pill:hover{border-color:rgb(var(--light-rgb)/.5)}
-.pill:active{transform:scale(.96)}
 .pill[aria-pressed=true],.pill[aria-expanded=true]{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:700}
 
-.intro{position:absolute;left:4%;bottom:6%;width:38%;min-width:260px;pointer-events:none;z-index:5}
-.title{margin:0;font-family:var(--font-display);font-weight:400;
-  font-size:clamp(34px,4.6vw,76px);line-height:1.02;letter-spacing:-.015em}
-.lede{margin:14px 0 0;max-width:30ch;font-size:clamp(14px,1.15vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.82)}
-.counter{margin-top:22px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgb(var(--light-rgb)/.6)}
-
-.hot{position:absolute;transform:translate(-50%,-50%);width:var(--w,10%);height:var(--h,14%);
-  padding:0;border:0;background:none;border-radius:14px;cursor:pointer;z-index:4}
-.hot:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.ring{position:absolute;inset:0;border-radius:14px;border:2px solid transparent;
-  transition:border-color .2s,background .2s,box-shadow .2s}
-.hot:hover .ring,.hot:focus-visible .ring{border-color:rgba(255,230,170,.55);
-  background:rgba(255,230,170,.14);box-shadow:0 0 0 2px rgba(255,230,170,.3)}
-.chip{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,6px);
-  padding:4px 12px;border:1.5px solid var(--ink);border-radius:999px;background:var(--accent);color:var(--ink);
-  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
-  opacity:0;transition:opacity .16s,transform .16s;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
-.hot:hover .chip,.hot:focus-visible .chip{opacity:1;transform:translate(-50%,0)}
-.hot[data-hint=true] .ring{animation:hint 1.6s ease-in-out infinite;
-  box-shadow:0 0 0 2px rgba(255,230,170,.6),0 0 18px rgba(255,214,120,.45)}
-@keyframes hint{50%{box-shadow:0 0 0 2px rgba(255,230,170,.2),0 0 8px rgba(255,214,120,.18)}}
-
-.hot[data-open=work]{left:34%;top:60%;--w:15%;--h:22%}
-.hot[data-open=services]{left:47%;top:71%;--w:10%;--h:12%}
-.hot[data-open=contact]{left:80.5%;top:70%;--w:11%;--h:13%}
-.hot[data-open=about]{left:67%;top:57%;--w:8%;--h:14%}
-.hot[data-open=resume]{left:66%;top:25%;--w:11%;--h:16%}
-.hot[data-open=languages]{left:81%;top:41%;--w:8%;--h:13%}
-.hot[data-open=beyond]{left:17%;top:26%;--w:14%;--h:24%}
+.intro{position:absolute;left:4%;bottom:6%;width:40%;min-width:250px;pointer-events:none;z-index:5}
+.title{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(32px,4.4vw,70px);line-height:1.02;letter-spacing:-.015em}
+.lede{margin:14px 0 0;max-width:30ch;font-size:clamp(14px,1.1vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.82)}
+.counter{margin-top:20px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgb(var(--light-rgb)/.6)}
 
 .panel{position:fixed;top:0;right:0;z-index:9100;display:flex;flex-direction:column;
   width:min(320px,86vw);height:100dvh;padding:16px 14px;overflow-y:auto;
-  background:rgb(var(--scrim-rgb)/.86);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);
+  background:rgb(var(--scrim-rgb)/.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   box-shadow:-24px 0 60px rgba(0,0,0,.4);transform:translateX(100%);transition:transform .32s cubic-bezier(.3,0,.1,1)}
 .panel[data-open=true]{transform:translateX(0)}
 .panel-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:10px}
-.panel-title{font-family:var(--font-display);font-size:18px}
-.panel-close{width:44px;height:44px;border-radius:999px;border:1px solid rgb(var(--light-rgb)/.28);
-  background:none;color:var(--light);font-size:18px;cursor:pointer}
-.item{display:block;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:10px;
-  background:none;color:var(--light);font-family:var(--font-ui);font-size:15px;text-align:left;cursor:pointer}
+.panel-title{font-family:var(--fd);font-size:18px}
+.panel-close{width:44px;height:44px;border-radius:999px;border:1px solid rgb(var(--light-rgb)/.28);background:none;color:var(--light);font-size:18px;cursor:pointer}
+.item{display:block;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:10px;background:none;
+  color:var(--light);font-family:var(--fu);font-size:15px;text-align:left;cursor:pointer;text-decoration:none}
 .item:hover{background:rgb(var(--light-rgb)/.1)}
 .group{display:flex;flex-direction:column;gap:1px;margin:4px 0;padding-top:6px;border-top:1px solid rgb(var(--light-rgb)/.14)}
 .group-label{padding:4px 12px 2px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:rgb(var(--light-rgb)/.55)}
@@ -96,68 +72,47 @@ a{color:var(--accent);text-decoration:none}
 .reader-scrim{position:absolute;inset:0;background:rgba(24,18,15,.7);backdrop-filter:blur(2px)}
 .sheet{position:relative;width:min(880px,100%);max-height:84vh;overflow:auto;padding:clamp(26px,4.4vw,52px);
   border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 36px 70px rgba(0,0,0,.5)}
-.closeX{position:absolute;top:-54px;right:0;width:46px;height:46px;border-radius:999px;border:0;
-  background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
-.r-name{margin:0 0 4px;font-family:var(--font-display);font-weight:400;font-size:clamp(30px,4.2vw,46px);line-height:1.05}
+.closeX{position:absolute;top:-54px;right:0;width:46px;height:46px;border-radius:999px;border:0;background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
+.r-name{margin:0 0 4px;font-family:var(--fd);font-weight:400;font-size:clamp(30px,4.2vw,46px);line-height:1.05}
 .r-role{margin:0 0 20px;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--brand)}
 .r-rule{height:2px;background:var(--ink);margin-bottom:22px}
 .r-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:34px}
 .r-lab{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--brand)}
-.r-h{margin:0 0 2px;font-family:var(--font-display);font-weight:400;font-size:22px}
-.r-meta{margin:0 0 8px;font-family:var(--font-mono);font-size:12px;color:rgb(var(--ink-rgb)/.65)}
+.r-h{margin:0 0 2px;font-family:var(--fd);font-weight:400;font-size:22px}
+.r-meta{margin:0 0 8px;font-family:var(--fm);font-size:12px;color:rgb(var(--ink-rgb)/.65)}
 .r-p{margin:0 0 16px;font-size:15px;line-height:1.55}
 .r-block{margin-bottom:20px}
 .r-ul{margin:0 0 16px;padding-left:18px;font-size:14.5px;line-height:1.7}
-.sheet a{color:var(--brand);text-decoration:underline}
+.sheet a{color:var(--brand)}
 .cta{display:inline-block;margin-top:6px;padding:13px 22px;border-radius:999px;background:var(--ink);
   color:var(--paper)!important;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none!important}
 .cta:hover{background:var(--brand)}
-
-.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 @media (max-width:899px){
   .intro{width:auto;right:4%;bottom:5%}
   .title{font-size:30px}
   .lede{font-size:14.5px;max-width:none}
-  .hot{--w:16%!important;--h:13%!important}
   .r-grid{grid-template-columns:1fr;gap:18px}
   .closeX{top:8px;right:8px;background:rgba(46,33,28,.8);color:var(--paper)}
-}
-@media (prefers-reduced-motion:reduce){
-  .hot[data-hint=true] .ring{animation:none}
-  .panel{transition:none}
 }
 </style>
 </head>
 <body>
 
 <div class="page">
-  <div class="stage">
-    <div class="scene">
-      <div class="frame" id="frame">
-        <div class="loading" id="loading">Setting up the office</div>
-      </div>
-    </div>
-    <div class="scrim"></div>
+  <div id="scene"><div class="loading" id="loading">Setting up the office</div></div>
+  <div class="scrim"></div>
+  <div class="chip" id="chip" aria-hidden="true"></div>
 
-    <button class="hot" data-open="work" type="button" aria-label="Open selected work"><span class="ring"></span><span class="chip">Selected work</span></button>
-    <button class="hot" data-open="services" type="button" aria-label="Open services"><span class="ring"></span><span class="chip">Services</span></button>
-    <button class="hot" data-open="contact" type="button" aria-label="Open contact"><span class="ring"></span><span class="chip">Say hello</span></button>
-    <button class="hot" data-open="about" type="button" aria-label="Open about me"><span class="ring"></span><span class="chip">About me</span></button>
-    <button class="hot" data-open="resume" type="button" aria-label="Open résumé"><span class="ring"></span><span class="chip">Résumé</span></button>
-    <button class="hot" data-open="languages" type="button" aria-label="Open languages"><span class="ring"></span><span class="chip">Languages</span></button>
-    <button class="hot" data-open="beyond" type="button" aria-label="Open beyond work"><span class="ring"></span><span class="chip">Beyond work</span></button>
+  <div class="actions" id="actions">
+    <button class="pill" id="hints" type="button" aria-pressed="false">Hints</button>
+    <button class="pill" id="menubtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="panel">Menu</button>
+  </div>
 
-    <div class="actions" id="actions">
-      <button class="pill" id="hints" type="button" aria-pressed="false">Hints</button>
-      <button class="pill" id="menubtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="panel">Menu</button>
-    </div>
-
-    <div class="intro">
-      <h1 class="title">Welcome to my office</h1>
-      <p class="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
-      <div class="counter" id="counter">0 of 7 discovered</div>
-    </div>
+  <div class="intro">
+    <h1 class="title">Welcome to my office</h1>
+    <p class="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
+    <div class="counter" id="counter">0 of 7 discovered</div>
   </div>
 </div>
 
@@ -195,271 +150,336 @@ a{color:var(--accent);text-decoration:none}
 <script type="module">
 import * as T from 'three';
 
-const frame = document.getElementById('frame');
-const loading = document.getElementById('loading');
+/* ---------- content for the reader ---------- */
+const CAL = 'https://calendar.app.google/UVRpSX8X4jy7VhyV8';
+const MAIL = 'giovannitognetto.uni@gmail.com';
+const LI = 'https://www.linkedin.com/in/giovannitognetto';
+const head = (n,r) => `<h2 class="r-name">${n}</h2><p class="r-role">${r}</p><div class="r-rule"></div>`;
+const cta = (h,t,b) => `<a class="cta" href="${h}"${b?' target="_blank" rel="noreferrer"':''}>${t}</a>`;
 
+const CONTENT = {
+  work: head('Selected work','Partnerships · Events · Data') + `<div class="r-grid"><div>
+    <div class="r-block"><h3 class="r-h">30+ live events across Europe</h3><p class="r-meta">Fever · Madrid · 2024–present</p><p class="r-p">Managed the end-to-end lifecycle of live events, from post-contract handoff to final closing, coordinating 5+ internal teams and launching concerts and sport events. Main point of contact for 15+ key partners.</p></div>
+    <div class="r-block"><h3 class="r-h">A national festival, 12 cities</h3><p class="r-meta">RDS · Italy · 2023</p><p class="r-p">Managed the RDS Summer Festival across 12 locations with 150,000+ attendees, 40+ marketing activations and 50+ sponsor and stakeholder relationships, including media plans and budgets.</p></div>
+    <div class="r-block"><h3 class="r-h">Finding the next big partners</h3><p class="r-meta">Fever · Madrid · 2024–2025</p><p class="r-p">Analyzed 500+ opportunities across 10+ countries, managed a 500+ account CRM and supported the negotiation of 50+ new partnerships with producers and venues.</p></div>
+    </div><div><p class="r-lab">In numbers</p><ul class="r-ul"><li>30+ live events</li><li>15+ key partners</li><li>500+ opportunities analyzed</li><li>150K+ festival attendees</li><li>10+ countries</li></ul>${cta('/portfolio.html','Full portfolio')}</div></div>`,
+
+  services: head('What I can do for you','Freelance services') + `<div class="r-grid"><div>
+    <div class="r-block"><h3 class="r-h">Partnership management</h3><p class="r-p">Find, onboard and grow partners. I run the whole relationship, from the signed contract to the final closing.</p></div>
+    <div class="r-block"><h3 class="r-h">Marketing &amp; campaigns</h3><p class="r-p">Plan and launch campaigns and brand activations with clear, measurable results.</p></div>
+    <div class="r-block"><h3 class="r-h">Data &amp; market research</h3><p class="r-p">Market scans, CRM clean-up, performance analysis and opportunity sizing, so decisions rest on data.</p></div>
+    <div class="r-block"><h3 class="r-h">Event execution</h3><p class="r-p">End-to-end delivery of live events, from planning and coordination to on-site execution and closing.</p></div>
+    </div><div><p class="r-lab">Good fit for</p><ul class="r-ul"><li>Events &amp; entertainment companies</li><li>Startups and scaleups</li><li>Small businesses</li></ul>${cta(CAL,'Book a free call',1)}</div></div>`,
+
+  about: head('Hi, I’m Giovanni','Italian in Madrid') + `<div class="r-grid"><div>
+    <p class="r-p">I am a partner manager and marketer living in Madrid. I work with events, entertainment and fast-growing brands, turning partnerships into things that actually happen: campaigns that launch, events that run, numbers that add up.</p>
+    <p class="r-p">I studied at Bocconi, UPF Barcelona and IE Business School, where I was picked as top student for the Global Immersion Week in Amsterdam. Along the way I have worked at Fever, RDS and illycaffè.</p>
+    <p class="r-p">What I like is the mix of commercial instinct and data: finding the opportunity, then proving it worked.</p>
+    </div><div><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain · EU citizen</p><p class="r-lab">Works across</p><p class="r-p">Europe, remote and on-site</p>${cta(CAL,'Say hello',1)}</div></div>`,
+
+  resume: head('Giovanni Tognetto','Partnerships · Marketing · Data') + `<div class="r-grid"><div><p class="r-lab">Experience</p>
+    <div class="r-block"><h3 class="r-h">Fever</h3><p class="r-meta">Partner Management Associate · Aug 2025 — present</p><p class="r-p">30+ live events end to end, 15+ key partners, 10+ marketing campaigns, 5+ new partner acquisitions.</p><p class="r-meta">Market Research Analyst · Sep 2024 — Aug 2025</p><p class="r-p">500+ opportunities analyzed, 500+ account CRM, 50+ partnerships negotiated.</p></div>
+    <div class="r-block"><h3 class="r-h">RDS — Radio Dimensione Suono</h3><p class="r-meta">Special Initiatives, Marketing Intern · Jan — Jul 2023</p><p class="r-p">RDS Summer Festival in 12 cities, 150,000+ attendees, 40+ activations, 50+ sponsors.</p></div>
+    <div class="r-block"><h3 class="r-h">illycaffè</h3><p class="r-meta">Project Management Intern · Mar — May 2021</p><p class="r-p">8+ benchmark analyses, 5% less packaging waste, 7% revenue increase.</p></div>
+    </div><div><p class="r-lab">Education</p>
+    <p class="r-p"><strong>IE Business School</strong><br>Master’s in Digital Marketing &amp; Analytics (2023–2024) · Top Student</p>
+    <p class="r-p"><strong>UPF Barcelona School of Management</strong><br>Master’s in Marketing (2021–2022) · Class Representative</p>
+    <p class="r-p"><strong>Università Bocconi</strong><br>BSc Business Administration (2018–2021)</p>
+    <p class="r-lab">Tools</p><p class="r-p">Salesforce · Google Analytics · Google Ads · SQL · Python · Tableau · Excel</p>${cta(CAL,'Book a free call',1)}</div></div>`,
+
+  languages: head('Languages','Four, and counting') + `<div class="r-grid"><div>
+    <p class="r-p">I work in three languages every week, which helps when a partner in Milan, a venue in Madrid and a client in London all need an answer the same afternoon.</p>
+    <ul class="r-ul"><li><strong>Italian</strong> — native</li><li><strong>English</strong> — native</li><li><strong>Spanish</strong> — fluent</li><li><strong>French</strong> — beginner</li></ul>
+    </div><div><p class="r-lab">Works across</p><p class="r-p">Italy, Spain, the UK and the rest of Europe, remote or on-site.</p>${cta(CAL,'Say hello',1)}</div></div>`,
+
+  beyond: head('Beyond work','The other half') + `<div class="r-grid"><div>
+    <p class="r-p">Fifteen years of basketball at national level, which is where I learned most of what I know about teams, pressure and showing up when it is not fun.</p>
+    <p class="r-p">Formula 1 on Sundays, music most other days, and travelling whenever the calendar allows it.</p>
+    </div><div><p class="r-lab">Ask me about</p><ul class="r-ul"><li>Basketball</li><li>Formula 1</li><li>Live music</li><li>Where to eat in Madrid</li></ul></div></div>`,
+
+  contact: head('Let’s build something','Contact') + `<div class="r-grid"><div>
+    <p class="r-p">Tell me about your project, your goals and your timeline, and I’ll get back to you. Prefer to talk it through? Grab a free 30-minute slot in my calendar.</p>${cta(CAL,'Book a free call',1)}
+    </div><div><p class="r-lab">Direct</p><p class="r-p"><a href="mailto:${MAIL}">${MAIL}</a><br><a href="${LI}" target="_blank" rel="noreferrer">LinkedIn</a></p><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain</p></div></div>`
+};
+
+/* ---------- scene ---------- */
+const host = document.getElementById('scene');
 const scene = new T.Scene();
-scene.background = new T.Color('#2e2620');
-const camera = new T.PerspectiveCamera(30, 16/9, .1, 200);
+scene.background = new T.Color('#2b241e');
+scene.fog = new T.Fog('#2b241e', 46, 86);
+
+const camera = new T.PerspectiveCamera(30, 1, .1, 200);
 const renderer = new T.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(1600, 900, false);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
 renderer.toneMapping = T.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
-frame.appendChild(renderer.domElement);
+renderer.toneMappingExposure = 1.0;
+host.appendChild(renderer.domElement);
 
-const mat = (c, r = .78, m = 0) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:m});
-function box(w,h,d,c,x,y,z,material){
-  const o = new T.Mesh(new T.BoxGeometry(w,h,d), material || mat(c));
-  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true; scene.add(o); return o;
-}
-function cyl(rt,rb,h,c,x,y,z,seg=24){
-  const o = new T.Mesh(new T.CylinderGeometry(rt,rb,h,seg), mat(c));
-  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true; scene.add(o); return o;
-}
-function sph(r,c,x,y,z){
-  const o = new T.Mesh(new T.SphereGeometry(r,32,24), mat(c,.6));
-  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true; scene.add(o); return o;
-}
+/* matte materials: high roughness, no metalness → no plastic sheen */
+const mat = (c, r = .95) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:0, flatShading:false});
+const add = (o, parent) => { o.castShadow = true; o.receiveShadow = true; (parent||scene).add(o); return o; };
+const box = (w,h,d,c,x,y,z,p) => add(Object.assign(new T.Mesh(new T.BoxGeometry(w,h,d), mat(c)), {position:new T.Vector3(x,y,z)}), p);
+const cyl = (rt,rb,h,c,x,y,z,s=24,p) => add(Object.assign(new T.Mesh(new T.CylinderGeometry(rt,rb,h,s), mat(c)), {position:new T.Vector3(x,y,z)}), p);
+const sph = (r,c,x,y,z,p) => add(Object.assign(new T.Mesh(new T.SphereGeometry(r,32,24), mat(c)), {position:new T.Vector3(x,y,z)}), p);
 
 /* room */
-box(60,26,1,'#413a30',0,9,-4).castShadow = false;
-box(60,1,16,'#241f19',0,-4.5,4).castShadow = false;
+const wall = box(70,30,1,'#3f382f',0,11,-4); wall.castShadow = false;
+const floor = box(70,1,20,'#241f19',0,-4.5,5); floor.castShadow = false;
 
 /* light */
-scene.add(new T.HemisphereLight(0xffe9c9, 0x2a221a, .55));
-const key = new T.DirectionalLight(0xffe2b0, 2.1);
-key.position.set(-9,13,10); key.castShadow = true;
-key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0012; key.shadow.radius = 4;
-Object.assign(key.shadow.camera,{left:-22,right:22,top:18,bottom:-14,near:1,far:50});
+scene.add(new T.HemisphereLight(0xffeedd, 0x2a221a, .6));
+const key = new T.DirectionalLight(0xffe6c2, 1.5);
+key.position.set(-11,15,13); key.castShadow = true;
+key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0012; key.shadow.radius = 5;
+Object.assign(key.shadow.camera,{left:-26,right:26,top:22,bottom:-16,near:1,far:60});
 scene.add(key);
-const fill = new T.DirectionalLight(0xd8b98a, .45);
-fill.position.set(10,5,9); scene.add(fill);
-const glow = new T.PointLight(0xffd9a0, 22, 26, 2);
-glow.position.set(-7.5,8.5,1.5); scene.add(glow);
+const fill = new T.DirectionalLight(0xcdb294, .35); fill.position.set(12,6,10); scene.add(fill);
+const warm = new T.PointLight(0xffd9a0, 16, 30, 2); warm.position.set(-7.5,8,2); scene.add(warm);
 
-/* desk */
+/* ---- desk ---- */
 const deskY = -1.2, dx = -7.2;
-box(13,.5,5.4,'#6f4a2c',dx,deskY,1.6);
-box(12,.5,.6,'#5a3b22',dx,deskY-.55,-.7);
-box(.6,6,.6,'#5a3b22',dx-6,deskY-3.2,3.6);
-box(.6,6,.6,'#5a3b22',dx+6,deskY-3.2,3.6);
-box(.6,6,.6,'#54371f',dx-6,deskY-3.2,-.4);
-box(.6,6,.6,'#54371f',dx+6,deskY-3.2,-.4);
-box(11.4,.35,3.6,'#5a3b22',dx,deskY-3.1,1.6);
+box(13,.5,5.4,'#6b4729',dx,deskY,1.6);
+box(12,.5,.6,'#56381f',dx,deskY-.55,-.7);
+[[-6,3.6],[6,3.6],[-6,-.4],[6,-.4]].forEach(([ox,oz]) => box(.6,6,.6,'#52351d',dx+ox,deskY-3.2,oz));
+box(11.4,.35,3.6,'#56381f',dx,deskY-3.1,1.6);
 
-/* laptop */
-box(5.4,.3,3.6,'#b9b2a6',dx-.4,deskY+.4,2.2);
-const lid = new T.Group();
-const lidBack = new T.Mesh(new T.BoxGeometry(5.4,3.3,.25), mat('#2b2721'));
-lidBack.position.y = 1.65; lidBack.castShadow = true; lid.add(lidBack);
-const screen = new T.Mesh(new T.BoxGeometry(4.9,2.85,.06), mat('#0c0a07',.5));
-screen.position.set(0,1.65,.16); lid.add(screen);
-[['#b23a2f',.5,-1.6],['#d9b24c',.95,-.75],['#5e9e79',1.45,.1],['#7c6bd8',2,.95]].forEach(([c,h,x])=>{
-  const b = new T.Mesh(new T.BoxGeometry(.52,h,.04), mat(c,.5));
-  b.position.set(x,.55+h/2,.2); lid.add(b);
-});
-lid.position.set(dx-.4, deskY+.5, .45); lid.rotation.x = -.16; scene.add(lid);
+/* laptop (clickable → work) */
+const laptop = new T.Group(); scene.add(laptop);
+box(5.4,.3,3.6,'#aba498',0,.4,2.2,laptop);
+const lid = new T.Group(); laptop.add(lid);
+box(5.4,3.3,.25,'#2b2721',0,1.65,0,lid);
+box(4.9,2.85,.06,'#0d0b08',0,1.65,.16,lid);
+[['#b23a2f',.5,-1.6],['#d9b24c',.95,-.75],['#5e9e79',1.45,.1],['#7c6bd8',2,.95]]
+  .forEach(([c,h,x]) => box(.52,h,.04,c,x,.55+h/2,.2,lid));
+lid.position.set(0,.5,-1.75); lid.rotation.x = -.16;
+laptop.position.set(dx-.4, deskY, .45);
 
-/* notebook + mug */
-const nb = box(2.6,.22,1.9,'#f0c64a',dx+3.9,deskY+.36,2.5); nb.rotation.y = -.22;
-for (let i=0;i<3;i++){ const l = box(1.8,.03,.1,'#241f19',dx+3.95,deskY+.48,2.1+i*.45); l.rotation.y = -.22; }
-cyl(.42,.42,.85,'#f6f1e6',dx-4.6,deskY+.68,2.6);
+/* notebook (clickable → services) */
+const notebook = new T.Group(); scene.add(notebook);
+box(2.6,.22,1.9,'#e8bf49',0,0,0,notebook);
+for (let i=0;i<3;i++) box(1.8,.03,.1,'#2a241c',.05,.12,-.45+i*.45,notebook);
+notebook.position.set(dx+3.9, deskY+.36, 2.5); notebook.rotation.y = -.22;
 
-/* bookcase */
+/* mug */
+cyl(.42,.42,.85,'#efe7d6',dx-4.6,deskY+.68,2.6);
+
+/* ---- bookcase ---- */
 const hx = 7.6, bw = 11, bd = 3.4;
-box(bw,.5,bd,'#d9a823',hx,-4,2);
-[-0.5,3,6.5,9.6].forEach(y => box(bw,.5,bd,'#f0c64a',hx,y,2));
-box(.5,13,bd,'#e0b32f',hx-5.3,2.8,2);
-box(.5,13,bd,'#e0b32f',hx+5.3,2.8,2);
-box(.5,13,bd,'#e7ba33',hx,2.8,2);
-box(bw,13,.3,'#a8831b',hx,2.8,.5).castShadow = false;
+box(bw,.5,bd,'#cc9d1f',hx,-4,2);
+[-0.5,3,6.5,9.6].forEach(y => box(bw,.5,bd,'#e3b93f',hx,y,2));
+box(.5,13,bd,'#d5ad33',hx-5.3,2.8,2);
+box(.5,13,bd,'#d5ad33',hx+5.3,2.8,2);
+box(.5,13,bd,'#dab534',hx,2.8,2);
+box(bw,13,.3,'#9c7a18',hx,2.8,.5).castShadow = false;
 
-function books(bx,by,bz,n,s){
-  const cl = ['#8e3b32','#3e5e7e','#d9b24c','#5e7a4f','#a6512e','#6b5aa6','#c9c0ad'];
+function shelfBooks(parent, bx, by, bz, n, s){
+  const cl = ['#8e3b32','#3e5e7e','#c9a64a','#5e7a4f','#a6512e','#6b5aa6','#c0b7a4'];
   for (let j=0;j<n;j++){
     const h = 1.5+(j%3)*.35, w = .22+(j%4)*.07;
-    box(w,h,1.5,cl[(j+s)%7],bx+j*.42,by+h/2,bz);
+    box(w,h,1.5,cl[(j+s)%7], bx+j*.42, by+h/2, bz, parent);
   }
 }
-books(hx-4.9,9.85,2.2,9,0); books(hx+.5,9.85,2.2,5,3);
-books(hx-4.9,6.75,2.2,6,2); books(hx-4.9,3.25,2.2,4,5);
+/* top shelf books (clickable → resume) */
+const bookGroup = new T.Group(); scene.add(bookGroup);
+shelfBooks(bookGroup, hx-4.9, 9.85, 2.2, 9, 0);
+shelfBooks(bookGroup, hx+.6, 9.85, 2.2, 5, 3);
+/* decorative books */
+shelfBooks(null, hx-4.9, 6.75, 2.2, 6, 2);
+shelfBooks(null, hx-4.9, 3.25, 2.2, 4, 5);
 
-/* basketball */
-const ball = sph(1.05,'#d1762b',hx-3.2,.6,2.2);
+/* basketball (clickable → about) */
+const ball = new T.Group(); scene.add(ball);
+sph(1.05,'#c26f2a',0,0,0,ball);
 const seamGeo = new T.TorusGeometry(1.05,.045,8,40);
-const seam = new T.Mesh(seamGeo, mat('#241f19')); seam.position.copy(ball.position); scene.add(seam);
-const seam2 = new T.Mesh(seamGeo, mat('#241f19')); seam2.position.copy(ball.position); seam2.rotation.y = Math.PI/2; scene.add(seam2);
+[0, Math.PI/2].forEach(r => { const s = add(new T.Mesh(seamGeo, mat('#2a1f16')), ball); s.rotation.y = r; });
+ball.position.set(hx-3.2, .6, 2.2);
 
-/* globe */
-sph(.95,'#2e6e8e',hx+2.6,4.25,2.2);
-cyl(.5,.6,.28,'#241f19',hx+2.6,3.4,2.2);
+/* globe (clickable → languages) */
+const globe = new T.Group(); scene.add(globe);
+sph(.95,'#2f6b86',0,.85,0,globe);
+cyl(.5,.6,.28,'#2a241c',0,0,0,24,globe);
+globe.position.set(hx+2.6, 3.4, 2.2);
 
-/* rotary phone */
-const phone = new T.Group();
-const body = new T.Mesh(new T.BoxGeometry(2.3,.75,1.5), mat('#e58fa0',.55));
-body.castShadow = body.receiveShadow = true; phone.add(body);
-const dial = new T.Mesh(new T.CylinderGeometry(.62,.62,.12,28), mat('#f3b7c2',.5));
-dial.rotation.x = Math.PI/2; dial.position.set(0,.15,.78); dial.castShadow = true; phone.add(dial);
-const handset = new T.Mesh(new T.CapsuleGeometry(.26,1.7,6,12), mat('#f0a4b3',.5));
-handset.rotation.z = Math.PI/2; handset.position.set(0,.62,-.1); handset.castShadow = true; phone.add(handset);
-phone.position.set(hx+2.6,.05,2.1); phone.rotation.y = -.2; scene.add(phone);
+/* rotary phone (clickable → contact) */
+const phone = new T.Group(); scene.add(phone);
+box(2.3,.75,1.5,'#dd8a9a',0,0,0,phone);
+const dial = add(new T.Mesh(new T.CylinderGeometry(.62,.62,.12,28), mat('#eeadba')), phone);
+dial.rotation.x = Math.PI/2; dial.position.set(0,.15,.78);
+const handset = add(new T.Mesh(new T.CapsuleGeometry(.26,1.7,6,12), mat('#e89fae')), phone);
+handset.rotation.z = Math.PI/2; handset.position.set(0,.62,-.1);
+phone.position.set(hx+2.6, .05, 2.1); phone.rotation.y = -.2;
 
-/* wall shelf, plant, frames */
+/* wall shelf + plant (clickable → beyond) + frames */
 const shY = 7.4, sx = -8.4;
-box(7.4,.4,1.6,'#f0c64a',sx,shY,-2.4);
-cyl(.78,.6,.9,'#1f1a12',sx-2.1,shY+.65,-2.3);
-const vines = new T.Group();
-for (let i=0;i<5;i++){
-  const a = (i/5)*Math.PI*2, L = 1.6+(i%3)*.9;
-  const v = new T.Mesh(new T.CylinderGeometry(.045,.045,L,6), mat('#5e9c47'));
-  v.position.set(Math.cos(a)*.5,-L/2,Math.sin(a)*.35); v.rotation.z = Math.cos(a)*.25; v.castShadow = true; vines.add(v);
-  const leaf = new T.Mesh(new T.SphereGeometry(.2,10,8), mat('#7cc05a'));
-  leaf.scale.set(1,.45,1); leaf.position.set(Math.cos(a)*.62,-L,Math.sin(a)*.4); leaf.castShadow = true; vines.add(leaf);
+box(7.4,.4,1.6,'#e3b93f',sx,shY,-2.4);
+const plant = new T.Group(); scene.add(plant);
+cyl(.78,.6,.9,'#241e16',0,.65,0,24,plant);
+for (let i=0;i<6;i++){
+  const a = (i/6)*Math.PI*2, L = 1.7+(i%3)*.9;
+  const v = add(new T.Mesh(new T.CylinderGeometry(.05,.05,L,6), mat('#4f8a3d')), plant);
+  v.position.set(Math.cos(a)*.5, .2-L/2, Math.sin(a)*.35); v.rotation.z = Math.cos(a)*.22;
+  const leaf = add(new T.Mesh(new T.SphereGeometry(.22,10,8), mat('#6aa84f')), plant);
+  leaf.scale.set(1,.42,1); leaf.position.set(Math.cos(a)*.62, .2-L, Math.sin(a)*.4);
 }
-vines.position.set(sx-2.1, shY+.2, -2.3); scene.add(vines);
-function picture(x,y,w,h,c){ box(w,h,.18,'#efe7d6',x,y,-2.1); box(w-.5,h-.5,.06,c,x,y,-1.98); }
+plant.position.set(sx-2.1, shY+.2, -2.3);
+const picture = (x,y,w,h,c) => { box(w,h,.18,'#e4dccb',x,y,-2.1); box(w-.5,h-.5,.06,c,x,y,-1.98); };
 picture(sx+.9, shY+1.4, 1.9, 2.1, '#8c7b64');
 picture(sx+3, shY+1.3, 1.7, 1.8, '#5c6b7a');
 
-camera.position.set(0,4.6,27);
-camera.lookAt(0,2.2,0);
-renderer.render(scene,camera);
-loading.remove();
-</script>
+/* ---------- clickable objects ---------- */
+const TARGETS = [
+  {g: laptop,   id:'work',      label:'Selected work', top: 3.6},
+  {g: notebook, id:'services',  label:'Services',      top: .4},
+  {g: phone,    id:'contact',   label:'Say hello',     top: 1.1},
+  {g: ball,     id:'about',     label:'About me',      top: 1.3},
+  {g: bookGroup,id:'resume',    label:'Résumé',        top: 2.3},
+  {g: globe,    id:'languages', label:'Languages',     top: 2.1},
+  {g: plant,    id:'beyond',    label:'Beyond work',   top: 1.2}
+];
+TARGETS.forEach(t => t.g.traverse(o => { o.userData.hit = t; }));
 
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  var reader = document.getElementById('reader'),
-      body = document.getElementById('reader-body'),
-      panel = document.getElementById('panel'),
-      menubtn = document.getElementById('menubtn'),
-      hintbtn = document.getElementById('hints'),
-      actions = document.getElementById('actions'),
-      counter = document.getElementById('counter'),
-      hots = [].slice.call(document.querySelectorAll('.hot'));
+/* ---------- camera framing: fit the whole room ---------- */
+const FOCUS = new T.Vector3(0, 3.2, 1);
+const SPAN_W = 32, SPAN_H = 20;
+function frameCamera(){
+  const w = host.clientWidth, h = host.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  const vfov = T.MathUtils.degToRad(camera.fov) / 2;
+  const dH = (SPAN_H/2) / Math.tan(vfov);
+  const dW = (SPAN_W/2) / (Math.tan(vfov) * camera.aspect);
+  const dist = Math.min(Math.max(dH, dW) * 1.04, 70);
+  camera.position.set(FOCUS.x, FOCUS.y + dist*0.10, FOCUS.z + dist);
+  camera.lookAt(FOCUS);
+  camera.updateProjectionMatrix();
+}
+frameCamera();
+addEventListener('resize', frameCamera);
 
-  var CAL = 'https://calendar.app.google/UVRpSX8X4jy7VhyV8',
-      MAIL = 'giovannitognetto.uni@gmail.com',
-      LI = 'https://www.linkedin.com/in/giovannitognetto';
+/* ---------- hover + click via raycasting (always aligned) ---------- */
+const chip = document.getElementById('chip');
+const ray = new T.Raycaster();
+const ptr = new T.Vector2();
+const look = new T.Vector2();      // gentle parallax target
+const lookNow = new T.Vector2();
+let hovered = null, hintsOn = false, pointerInside = false;
 
-  function head(n,r){ return '<h2 class="r-name">'+n+'</h2><p class="r-role">'+r+'</p><div class="r-rule"></div>'; }
-  function cta(h,t,blank){ return '<a class="cta" href="'+h+'"'+(blank?' target="_blank" rel="noreferrer"':'')+'>'+t+'</a>'; }
-
-  var C = {
-    work: head('Selected work','Partnerships · Events · Data') +
-      '<div class="r-grid"><div>'+
-      '<div class="r-block"><h3 class="r-h">30+ live events across Europe</h3><p class="r-meta">Fever · Madrid · 2024–present</p><p class="r-p">Managed the end-to-end lifecycle of live events, from post-contract handoff to final closing, coordinating 5+ internal teams and launching concerts and sport events. Main point of contact for 15+ key partners.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">A national festival, 12 cities</h3><p class="r-meta">RDS · Italy · 2023</p><p class="r-p">Managed the RDS Summer Festival across 12 locations with 150,000+ attendees, 40+ marketing activations and 50+ sponsor and stakeholder relationships, including media plans and budgets.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">Finding the next big partners</h3><p class="r-meta">Fever · Madrid · 2024–2025</p><p class="r-p">Analyzed 500+ opportunities across 10+ countries, managed a 500+ account CRM and supported the negotiation of 50+ new partnerships with producers and venues.</p></div>'+
-      '</div><div><p class="r-lab">In numbers</p><ul class="r-ul"><li>30+ live events</li><li>15+ key partners</li><li>500+ opportunities analyzed</li><li>150K+ festival attendees</li><li>10+ countries</li></ul>'+cta('/portfolio.html','Full portfolio')+'</div></div>',
-
-    services: head('What I can do for you','Freelance services') +
-      '<div class="r-grid"><div>'+
-      '<div class="r-block"><h3 class="r-h">Partnership management</h3><p class="r-p">Find, onboard and grow partners. I run the whole relationship, from the signed contract to the final closing.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">Marketing &amp; campaigns</h3><p class="r-p">Plan and launch campaigns and brand activations with clear, measurable results.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">Data &amp; market research</h3><p class="r-p">Market scans, CRM clean-up, performance analysis and opportunity sizing, so decisions rest on data.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">Event execution</h3><p class="r-p">End-to-end delivery of live events, from planning and coordination to on-site execution and closing.</p></div>'+
-      '</div><div><p class="r-lab">Good fit for</p><ul class="r-ul"><li>Events &amp; entertainment companies</li><li>Startups and scaleups</li><li>Small businesses</li></ul>'+cta(CAL,'Book a free call',1)+'</div></div>',
-
-    about: head('Hi, I’m Giovanni','Italian in Madrid') +
-      '<div class="r-grid"><div>'+
-      '<p class="r-p">I am a partner manager and marketer living in Madrid. I work with events, entertainment and fast-growing brands, turning partnerships into things that actually happen: campaigns that launch, events that run, numbers that add up.</p>'+
-      '<p class="r-p">I studied at Bocconi, UPF Barcelona and IE Business School, where I was picked as top student for the Global Immersion Week in Amsterdam. Along the way I have worked at Fever, RDS and illycaffè.</p>'+
-      '<p class="r-p">What I like is the mix of commercial instinct and data: finding the opportunity, then proving it worked.</p>'+
-      '</div><div><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain · EU citizen</p><p class="r-lab">Works across</p><p class="r-p">Europe, remote and on-site</p>'+cta(CAL,'Say hello',1)+'</div></div>',
-
-    resume: head('Giovanni Tognetto','Partnerships · Marketing · Data') +
-      '<div class="r-grid"><div><p class="r-lab">Experience</p>'+
-      '<div class="r-block"><h3 class="r-h">Fever</h3><p class="r-meta">Partner Management Associate · Aug 2025 — present</p><p class="r-p">30+ live events end to end, 15+ key partners, 10+ marketing campaigns, 5+ new partner acquisitions.</p><p class="r-meta">Market Research Analyst · Sep 2024 — Aug 2025</p><p class="r-p">500+ opportunities analyzed, 500+ account CRM, 50+ partnerships negotiated.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">RDS — Radio Dimensione Suono</h3><p class="r-meta">Special Initiatives, Marketing Intern · Jan — Jul 2023</p><p class="r-p">RDS Summer Festival in 12 cities, 150,000+ attendees, 40+ activations, 50+ sponsors.</p></div>'+
-      '<div class="r-block"><h3 class="r-h">illycaffè</h3><p class="r-meta">Project Management Intern · Mar — May 2021</p><p class="r-p">8+ benchmark analyses, 5% less packaging waste, 7% revenue increase.</p></div>'+
-      '</div><div><p class="r-lab">Education</p>'+
-      '<p class="r-p"><strong>IE Business School</strong><br>Master’s in Digital Marketing &amp; Analytics (2023–2024) · Top Student</p>'+
-      '<p class="r-p"><strong>UPF Barcelona School of Management</strong><br>Master’s in Marketing (2021–2022) · Class Representative</p>'+
-      '<p class="r-p"><strong>Università Bocconi</strong><br>BSc Business Administration (2018–2021)</p>'+
-      '<p class="r-lab">Tools</p><p class="r-p">Salesforce · Google Analytics · Google Ads · SQL · Python · Tableau · Excel</p>'+
-      cta(CAL,'Book a free call',1)+'</div></div>',
-
-    languages: head('Languages','Four, and counting') +
-      '<div class="r-grid"><div><p class="r-p">I work in three languages every week, which helps when a partner in Milan, a venue in Madrid and a client in London all need an answer the same afternoon.</p>'+
-      '<ul class="r-ul"><li><strong>Italian</strong> — native</li><li><strong>English</strong> — native</li><li><strong>Spanish</strong> — fluent</li><li><strong>French</strong> — beginner</li></ul></div>'+
-      '<div><p class="r-lab">Works across</p><p class="r-p">Italy, Spain, the UK and the rest of Europe, remote or on-site.</p>'+cta(CAL,'Say hello',1)+'</div></div>',
-
-    beyond: head('Beyond work','The other half') +
-      '<div class="r-grid"><div><p class="r-p">Fifteen years of basketball at national level, which is where I learned most of what I know about teams, pressure and showing up when it is not fun.</p>'+
-      '<p class="r-p">Formula 1 on Sundays, music most other days, and travelling whenever the calendar allows it.</p></div>'+
-      '<div><p class="r-lab">Ask me about</p><ul class="r-ul"><li>Basketball</li><li>Formula 1</li><li>Live music</li><li>Where to eat in Madrid</li></ul></div></div>',
-
-    contact: head('Let’s build something','Contact') +
-      '<div class="r-grid"><div><p class="r-p">Tell me about your project, your goals and your timeline, and I’ll get back to you. Prefer to talk it through? Grab a free 30-minute slot in my calendar.</p>'+cta(CAL,'Book a free call',1)+'</div>'+
-      '<div><p class="r-lab">Direct</p><p class="r-p"><a href="mailto:'+MAIL+'">'+MAIL+'</a><br><a href="'+LI+'" target="_blank" rel="noreferrer">LinkedIn</a></p><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain</p></div></div>'
-  };
-
-  var found = {};
-  try { found = JSON.parse(localStorage.getItem('gtFound') || '{}'); } catch(e){}
-  function tick(){
-    var n = Object.keys(found).length;
-    counter.textContent = n + ' of ' + hots.length + ' discovered';
+function pick(ev){
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left)/r.width)*2 - 1, -((ev.clientY - r.top)/r.height)*2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObjects(scene.children, true);
+  for (const h of hits) {
+    let o = h.object;
+    while (o) { if (o.userData.hit) return o.userData.hit; o = o.parent; }
   }
-  tick();
+  return null;
+}
+renderer.domElement.addEventListener('pointermove', ev => {
+  pointerInside = true;
+  const r = renderer.domElement.getBoundingClientRect();
+  look.set(((ev.clientX - r.left)/r.width)*2 - 1, -((ev.clientY - r.top)/r.height)*2 + 1);
+  const hit = pick(ev);
+  hovered = hit;
+  renderer.domElement.style.cursor = hit ? 'pointer' : 'default';
+});
+renderer.domElement.addEventListener('pointerleave', () => { pointerInside = false; hovered = null; look.set(0,0); });
+renderer.domElement.addEventListener('click', ev => { const hit = pick(ev); if (hit) openReader(hit.id); });
 
-  var lastFocus = null;
-  function open(key){
-    if (!C[key]) return;
-    lastFocus = document.activeElement;
-    body.innerHTML = C[key];
-    reader.setAttribute('data-open','true');
-    document.body.style.overflow = 'hidden';
-    actions.setAttribute('data-hidden','true');
-    if (!found[key]) {
-      found[key] = 1;
-      try { localStorage.setItem('gtFound', JSON.stringify(found)); } catch(e){}
-      tick();
-    }
-  }
-  function close(){
-    reader.setAttribute('data-open','false');
-    document.body.style.overflow = '';
-    actions.setAttribute('data-hidden','false');
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
-  }
-  function setPanel(o){
-    panel.setAttribute('data-open', o ? 'true' : 'false');
-    menubtn.setAttribute('aria-expanded', o ? 'true' : 'false');
+/* label follows the object in 3D */
+const pos = new T.Vector3();
+function placeChip(){
+  if (!hovered) { chip.setAttribute('data-on','false'); return; }
+  pos.set(0,0,0); hovered.g.getWorldPosition(pos); pos.y += hovered.top;
+  pos.project(camera);
+  const r = renderer.domElement.getBoundingClientRect();
+  chip.style.left = (r.left + (pos.x*.5+.5)*r.width) + 'px';
+  chip.style.top  = (r.top + (-pos.y*.5+.5)*r.height) + 'px';
+  chip.textContent = hovered.label;
+  chip.setAttribute('data-on','true');
+}
+
+/* ---------- loop: parallax + hints pulse ---------- */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let t0 = performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = Math.min((now - t0)/1000, .05); t0 = now;
+
+  if (!reduce) {
+    lookNow.x += (look.x - lookNow.x) * Math.min(1, dt*2.6);
+    lookNow.y += (look.y - lookNow.y) * Math.min(1, dt*2.6);
+    const d = camera.position.distanceTo(FOCUS);
+    camera.position.x = FOCUS.x + lookNow.x * 2.6;
+    camera.position.y = FOCUS.y + d*0.10 - lookNow.y * 1.4;
+    camera.lookAt(FOCUS);
   }
 
-  document.addEventListener('click', function(e){
-    var t = e.target.closest('[data-open]');
-    if (t && t.classList.contains('hot') || (t && t.classList.contains('item'))) {
-      setPanel(false); open(t.getAttribute('data-open')); return;
-    }
-    if (e.target.closest('[data-close-reader]')) close();
-    if (e.target.closest('[data-close-panel]')) setPanel(false);
-  });
+  if (hintsOn) {
+    const p = (Math.sin(now/280)*.5+.5);
+    TARGETS.forEach(t => t.g.traverse(o => {
+      if (o.isMesh) { o.material.emissive = o.material.emissive || new T.Color(); o.material.emissive.setRGB(p*.22, p*.17, p*.04); }
+    }));
+  }
 
-  menubtn.addEventListener('click', function(){
-    setPanel(panel.getAttribute('data-open') !== 'true');
-  });
+  placeChip();
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(loop);
+document.getElementById('loading').remove();
 
-  hintbtn.addEventListener('click', function(){
-    var on = hintbtn.getAttribute('aria-pressed') !== 'true';
-    hintbtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    hots.forEach(function(b){ b.setAttribute('data-hint', on ? 'true' : 'false'); });
-  });
+/* ---------- reader, menu, hints, counter ---------- */
+const reader = document.getElementById('reader');
+const body = document.getElementById('reader-body');
+const panel = document.getElementById('panel');
+const menubtn = document.getElementById('menubtn');
+const hintbtn = document.getElementById('hints');
+const actions = document.getElementById('actions');
+const counter = document.getElementById('counter');
 
-  addEventListener('keydown', function(e){
-    if (e.key === 'Escape') {
-      if (reader.getAttribute('data-open') === 'true') close();
-      else setPanel(false);
-    }
-  });
+let found = {};
+try { found = JSON.parse(localStorage.getItem('gtFound') || '{}'); } catch(e){}
+const tick = () => counter.textContent = Object.keys(found).length + ' of ' + TARGETS.length + ' discovered';
+tick();
 
-  addEventListener('pointerdown', function(e){
-    if (panel.getAttribute('data-open') === 'true' && !panel.contains(e.target) && e.target !== menubtn) setPanel(false);
-  });
+let lastFocus = null;
+function openReader(id){
+  if (!CONTENT[id]) return;
+  lastFocus = document.activeElement;
+  body.innerHTML = CONTENT[id];
+  reader.setAttribute('data-open','true');
+  document.body.style.overflow = 'hidden';
+  actions.setAttribute('data-hidden','true');
+  chip.setAttribute('data-on','false');
+  if (!found[id]) { found[id] = 1; try { localStorage.setItem('gtFound', JSON.stringify(found)); } catch(e){} tick(); }
+}
+function closeReader(){
+  reader.setAttribute('data-open','false');
+  document.body.style.overflow = '';
+  actions.setAttribute('data-hidden','false');
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+const setPanel = o => { panel.setAttribute('data-open', o?'true':'false'); menubtn.setAttribute('aria-expanded', o?'true':'false'); };
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('.item[data-open]');
+  if (t) { setPanel(false); openReader(t.getAttribute('data-open')); return; }
+  if (e.target.closest('[data-close-reader]')) closeReader();
+  if (e.target.closest('[data-close-panel]')) setPanel(false);
+});
+menubtn.addEventListener('click', () => setPanel(panel.getAttribute('data-open') !== 'true'));
+hintbtn.addEventListener('click', () => {
+  hintsOn = !hintsOn;
+  hintbtn.setAttribute('aria-pressed', hintsOn ? 'true' : 'false');
+  if (!hintsOn) TARGETS.forEach(t => t.g.traverse(o => { if (o.isMesh && o.material.emissive) o.material.emissive.setRGB(0,0,0); }));
+});
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { reader.getAttribute('data-open') === 'true' ? closeReader() : setPanel(false); }
+});
+addEventListener('pointerdown', e => {
+  if (panel.getAttribute('data-open') === 'true' && !panel.contains(e.target) && e.target !== menubtn) setPanel(false);
 });
 </script>
 </body>
