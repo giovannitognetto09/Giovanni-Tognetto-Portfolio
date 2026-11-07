@@ -38,6 +38,9 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
   opacity:0;transition:opacity .16s;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 .chip[data-on=true]{opacity:1}
 
+.brand{position:absolute;top:4%;left:4%;z-index:8;pointer-events:none;
+  font-family:var(--fd);font-size:clamp(16px,1.6vw,21px);letter-spacing:.005em;color:var(--light);
+  text-shadow:0 2px 14px rgba(0,0,0,.55)}
 .actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:9200;
   transition:opacity .25s, transform .32s cubic-bezier(.3,0,.1,1)}
 body[data-panel=open] .actions{transform:translateX(calc(-1 * min(320px,86vw) + 2%))}
@@ -110,6 +113,8 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
   <div class="scrim"></div>
   <div class="chip" id="chip" aria-hidden="true"></div>
 
+  <div class="brand">Giovanni Tognetto</div>
+
   <div class="actions" id="actions">
     <button class="pill" id="hints" type="button" aria-pressed="false">Hints</button>
     <button class="pill" id="menubtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="panel">Menu</button>
@@ -128,11 +133,12 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
     <button class="panel-close" type="button" aria-label="Close menu" data-close-panel>×</button>
   </div>
   <button class="item" type="button" data-open="about">About me</button>
+  <button class="item" type="button" data-open="education">Academic career</button>
   <div class="group">
     <span class="group-label">Work</span>
     <button class="item sub" type="button" data-open="work">Selected work</button>
     <button class="item sub" type="button" data-open="services">Services</button>
-    <a class="item sub" href="/portfolio.html">Full portfolio page</a>
+    <a class="item sub" href="portfolio.html">Full portfolio page</a>
   </div>
   <button class="item" type="button" data-open="resume">Résumé</button>
   <button class="item" type="button" data-open="languages">Languages</button>
@@ -166,7 +172,7 @@ import * as T from 'three';
 
 /* ---------- content for the reader ---------- */
 const CAL = 'https://calendar.app.google/UVRpSX8X4jy7VhyV8';
-const MAIL = 'giovannitognetto.uni@gmail.com';
+const MAIL = 'business.tognetto@gmail.com';
 const LI = 'https://www.linkedin.com/in/giovannitognetto';
 const head = (n,r) => `<h2 class="r-name">${n}</h2><p class="r-role">${r}</p><div class="r-rule"></div>`;
 const cta = (h,t,b) => `<a class="cta" href="${h}"${b?' target="_blank" rel="noreferrer"':''}>${t}</a>`;
@@ -176,7 +182,7 @@ const CONTENT = {
     <div class="r-block"><h3 class="r-h">30+ live events across Europe</h3><p class="r-meta">Fever · Madrid · 2024–present</p><p class="r-p">Managed the end-to-end lifecycle of live events, from post-contract handoff to final closing, coordinating 5+ internal teams and launching concerts and sport events. Main point of contact for 15+ key partners.</p></div>
     <div class="r-block"><h3 class="r-h">A national festival, 12 cities</h3><p class="r-meta">RDS · Italy · 2023</p><p class="r-p">Managed the RDS Summer Festival across 12 locations with 150,000+ attendees, 40+ marketing activations and 50+ sponsor and stakeholder relationships, including media plans and budgets.</p></div>
     <div class="r-block"><h3 class="r-h">Finding the next big partners</h3><p class="r-meta">Fever · Madrid · 2024–2025</p><p class="r-p">Analyzed 500+ opportunities across 10+ countries, managed a 500+ account CRM and supported the negotiation of 50+ new partnerships with producers and venues.</p></div>
-    </div><div><p class="r-lab">In numbers</p><ul class="r-ul"><li>30+ live events</li><li>15+ key partners</li><li>500+ opportunities analyzed</li><li>150K+ festival attendees</li><li>10+ countries</li></ul>${cta('/portfolio.html','Full portfolio')}</div></div>`,
+    </div><div><p class="r-lab">In numbers</p><ul class="r-ul"><li>30+ live events</li><li>15+ key partners</li><li>500+ opportunities analyzed</li><li>150K+ festival attendees</li><li>10+ countries</li></ul>${cta('portfolio.html','Full portfolio')}</div></div>`,
 
   services: head('What I can do for you','Freelance services') + `<div class="r-grid"><div>
     <div class="r-block"><h3 class="r-h">Partnership management</h3><p class="r-p">Find, onboard and grow partners. I run the whole relationship, from the signed contract to the final closing.</p></div>
@@ -191,15 +197,67 @@ const CONTENT = {
     <p class="r-p">What I like is the mix of commercial instinct and data: finding the opportunity, then proving it worked.</p>
     </div><div><p class="r-lab">Based in</p><p class="r-p">Madrid, Spain · EU citizen</p><p class="r-lab">Works across</p><p class="r-p">Europe, remote and on-site</p>${cta(CAL,'Say hello',1)}</div></div>`,
 
-  resume: head('Giovanni Tognetto','Partnerships · Marketing · Data') + `<div class="r-grid"><div><p class="r-lab">Experience</p>
-    <div class="r-block"><h3 class="r-h">Fever</h3><p class="r-meta">Partner Management Associate · Aug 2025 — present</p><p class="r-p">30+ live events end to end, 15+ key partners, 10+ marketing campaigns, 5+ new partner acquisitions.</p><p class="r-meta">Market Research Analyst · Sep 2024 — Aug 2025</p><p class="r-p">500+ opportunities analyzed, 500+ account CRM, 50+ partnerships negotiated.</p></div>
-    <div class="r-block"><h3 class="r-h">RDS — Radio Dimensione Suono</h3><p class="r-meta">Special Initiatives, Marketing Intern · Jan — Jul 2023</p><p class="r-p">RDS Summer Festival in 12 cities, 150,000+ attendees, 40+ activations, 50+ sponsors.</p></div>
-    <div class="r-block"><h3 class="r-h">illycaffè</h3><p class="r-meta">Project Management Intern · Mar — May 2021</p><p class="r-p">8+ benchmark analyses, 5% less packaging waste, 7% revenue increase.</p></div>
-    </div><div><p class="r-lab">Education</p>
-    <p class="r-p"><strong>IE Business School</strong><br>Master’s in Digital Marketing &amp; Analytics (2023–2024) · Top Student</p>
-    <p class="r-p"><strong>UPF Barcelona School of Management</strong><br>Master’s in Marketing (2021–2022) · Class Representative</p>
-    <p class="r-p"><strong>Università Bocconi</strong><br>BSc Business Administration (2018–2021)</p>
-    <p class="r-lab">Tools</p><p class="r-p">Salesforce · Google Analytics · Google Ads · SQL · Python · Tableau · Excel</p>${cta(CAL,'Book a free call',1)}</div></div>`,
+  resume: head('Giovanni Tognetto','Partner management \u00b7 Marketing \u00b7 Data') + `
+    <p class="r-p">Partner Management Associate specialised in building and scaling high-impact partnerships within events and entertainment. Strong background in live event execution, sponsorship activation and partner management, with a deep passion for music and sport. Madrid, Spain &middot; EU citizen &middot; Italian, English, Spanish.</p>
+    <div class="r-grid"><div><p class="r-lab">Experience</p>
+
+    <div class="r-block"><h3 class="r-h">Fever &mdash; Partner Management Associate</h3>
+    <p class="r-meta">Madrid, Spain \u00b7 Aug 2025 &ndash; present</p><ul class="r-ul">
+    <li>Managing the end-to-end lifecycle of 30+ live events across Europe, from post-contract handoff through final closing, coordinating across 5+ internal teams.</li>
+    <li>Primary point of contact for 15+ key partners; launched and scaled 20+ events, including concerts and sport events.</li>
+    <li>Leading 10+ marketing campaigns alongside the Operations and Marketing teams.</li>
+    <li>Analysed partner performance data to identify upsell opportunities, contributing directly to 5+ new partner acquisitions.</li>
+    <li>Represented partner requirements to Product and Engineering, translating operational needs into platform improvements.</li></ul></div>
+
+    <div class="r-block"><h3 class="r-h">Fever &mdash; Market Research Analyst</h3>
+    <p class="r-meta">Madrid, Spain \u00b7 Sep 2024 &ndash; Aug 2025</p><ul class="r-ul">
+    <li>Analysed 500+ potential business opportunities across 10+ countries using market intelligence to identify high-value clients.</li>
+    <li>Managed the CRM system with 500+ accounts, increasing the efficiency of lead tracking and partner engagement.</li>
+    <li>Assisted in negotiating 50+ new partnerships with major producers and venues, driving growth in Fever&rsquo;s offering.</li></ul></div>
+
+    <div class="r-block"><h3 class="r-h">RDS &mdash; Radio Dimensione Suono &middot; Special Initiatives (Marketing) Intern</h3>
+    <p class="r-meta">Milan, Italy \u00b7 Jan &ndash; Jul 2023</p><ul class="r-ul">
+    <li>Managed the national RDS Summer Festival across 12 locations in Italy, attracting 150,000+ attendees.</li>
+    <li>Managed networking with 50+ sponsorship and stakeholder relations across media centres, agencies and clients; built media plans, finances and budgets.</li>
+    <li>Executed 40+ innovative marketing activations and 15+ on-site events, including music partners and sports brands.</li></ul></div>
+
+    <div class="r-block"><h3 class="r-h">illycaff&egrave; S.p.A. &mdash; Project Management Intern</h3>
+    <p class="r-meta">Trieste, Italy \u00b7 Mar &ndash; May 2021</p><ul class="r-ul">
+    <li>Conducted 8+ benchmark analyses on sustainability and product lifecycle, leading to a 5% reduction in packaging waste.</li>
+    <li>Managed sustainable product lifecycle and innovation strategies, increasing sales revenue by 7%.</li></ul></div>
+
+    </div><div>
+    <p class="r-lab">Skills</p><p class="r-p">Google Ads \u00b7 Google Analytics \u00b7 Salesforce (CRM) \u00b7 Python \u00b7 SQL \u00b7 Tableau \u00b7 SEO &amp; SEM \u00b7 Excel \u00b7 Microsoft Office Suite</p>
+    <p class="r-lab">Languages</p><p class="r-p">Italian (native) \u00b7 English (native) \u00b7 Spanish (fluent) \u00b7 French (beginner)</p>
+    <p class="r-lab">Education</p><p class="r-p">IE Business School \u00b7 UPF Barcelona School of Management \u00b7 Universit&agrave; Bocconi</p>
+    <p class="r-lab">Extracurricular</p><p class="r-p">International Summer Program in International Business (ESADE, Barcelona 2021) \u00b7 15 years of basketball at national level \u00b7 Formula 1, music and travelling.</p>
+    <p class="r-lab">Contact</p><p class="r-p"><a href="mailto:${MAIL}">${MAIL}</a><br><a href="${LI}" target="_blank" rel="noreferrer">LinkedIn</a></p>
+    ${cta('portfolio.html','Full portfolio page')} ${cta(CAL,'Book a free call',1)}
+    </div></div>`,
+
+  education: head('Academic career','Bocconi \u00b7 UPF Barcelona \u00b7 IE Business School') + `<div class="r-grid"><div>
+    <div class="r-block"><h3 class="r-h">IE Business School</h3>
+    <p class="r-meta">Master&rsquo;s in Digital Marketing &amp; Analytics \u00b7 Madrid, Spain \u00b7 Sep 2023 &ndash; Jul 2024</p><ul class="r-ul">
+    <li>Selected as Top Student for the IE Global Immersion Week in Amsterdam.</li>
+    <li>Salesforce Certificate.</li>
+    <li>Google Analytics Certificate.</li></ul></div>
+
+    <div class="r-block"><h3 class="r-h">UPF &mdash; Barcelona School of Management</h3>
+    <p class="r-meta">Master&rsquo;s in Marketing \u00b7 Barcelona, Spain \u00b7 Sep 2021 &ndash; Jul 2022</p><ul class="r-ul">
+    <li>Class Representative.</li></ul></div>
+
+    <div class="r-block"><h3 class="r-h">Universit&agrave; Commerciale Luigi Bocconi</h3>
+    <p class="r-meta">Bachelor&rsquo;s Degree in Business Administration and Management \u00b7 Milan, Italy \u00b7 Sep 2018 &ndash; Oct 2021</p></div>
+
+    <div class="r-block"><h3 class="r-h">ESADE</h3>
+    <p class="r-meta">International Summer Program in International Business \u00b7 Barcelona, Spain \u00b7 2021</p></div>
+
+    </div><div>
+    <p class="r-lab">Certificates</p><ul class="r-ul"><li>Salesforce</li><li>Google Analytics</li></ul>
+    <p class="r-lab">Studied in</p><p class="r-p">Milan \u00b7 Barcelona \u00b7 Madrid \u00b7 Amsterdam</p>
+    <p class="r-lab">Languages</p><p class="r-p">Italian (native) \u00b7 English (native) \u00b7 Spanish (fluent) \u00b7 French (beginner)</p>
+    ${cta(CAL,'Book a free call',1)}
+    </div></div>`,
 
   languages: head('Languages','Four, and counting') + `<div class="r-grid"><div>
     <p class="r-p">I work in three languages every week, which helps when a partner in Milan, a venue in Madrid and a client in London all need an answer the same afternoon.</p>
@@ -266,8 +324,14 @@ box(13,.6,.7,'#5d3c21',dx,deskTop-.7,-1.1);
   box(.62,FLOOR-deskTop+.3,.62,'#5a3a20',dx+ox,(FLOOR+deskTop)/2,oz));
 box(12,.35,3.4,'#5d3c21',dx,FLOOR+2.1,1.4);
 
-/* chair back, behind the desk */
-const chair = box(4.6,3.4,.5,'#4a3b2d',dx+.4,FLOOR+4.4,5.9); chair.rotation.x = .08;
+/* chair, behind the desk */
+const chairG = new T.Group(); scene.add(chairG);
+box(4.4,.42,4.2,'#5a4631',0,0,0,chairG);
+[[-1.75,-1.65],[1.75,-1.65],[-1.75,1.65],[1.75,1.65]].forEach(([ox,oz]) =>
+  box(.32,2.9,.32,'#43341f',ox,-1.66,oz,chairG));
+const cback = box(4.4,3.3,.4,'#5a4631',0,1.85,1.9,chairG); cback.rotation.x = .1;
+box(4.4,.3,.4,'#43341f',0,3.5,1.72,chairG).rotation.x = .1;
+chairG.position.set(dx+.4, FLOOR+3.1, 6.4);
 
 /* laptop (clickable -> work) */
 const laptop = new T.Group(); scene.add(laptop);
@@ -292,16 +356,30 @@ cyl(.09,.09,2.8,'#2a241c',-1.5,.42,0,10,notebook).rotation.z = Math.PI/2;
 notebook.position.set(dx+4.3, deskTop+.5, 2.5);
 notebook.rotation.y = -.26; notebook.rotation.x = -.1;
 
-/* phone on a stand (clickable -> contact) */
+/* old desk phone (clickable -> contact) */
 const phone = new T.Group(); scene.add(phone);
-box(1.5,.22,1.1,'#2f2822',0,.11,.26,phone);
-const slab = new T.Group(); phone.add(slab);
-box(1.2,2.5,.2,'#1d1b19',0,1.25,0,slab);
-box(1.04,2.18,.06,'#123532',0,1.28,.12,slab);
-box(.36,.08,.05,'#3b3b39',0,2.3,.14,slab);
-sph(.1,'#6fe0ae',0,.5,.14,slab);
-slab.position.set(0,.18,-.16); slab.rotation.x = -.2;
-phone.position.set(dx+6.6, deskTop+.28, 1.5); phone.rotation.y = -.34;
+box(2.7,.6,2,'#8e2f3a',0,.3,0,phone);
+box(2.5,.55,.7,'#8e2f3a',0,.68,-.6,phone);
+const dialp = add(new T.Mesh(new T.CylinderGeometry(.6,.6,.14,28), mat('#f2e7d6')), phone);
+dialp.rotation.x = -.38; dialp.position.set(0,.66,.42);
+for (let i=0;i<10;i++){
+  const a = (i/10)*Math.PI*2 + .3;
+  const hole = add(new T.Mesh(new T.CylinderGeometry(.085,.085,.2,10), mat('#2a1f22')), phone);
+  hole.rotation.x = -.38;
+  hole.position.set(Math.cos(a)*.4, .70 + Math.sin(a)*.145, .46 + Math.sin(a)*.36);
+}
+box(.5,.4,.55,'#73242e',-.9,.85,-.55,phone);
+box(.5,.4,.55,'#73242e',.9,.85,-.55,phone);
+const hs = new T.Group(); phone.add(hs);
+cyl(.19,.19,1.9,'#73242e',0,0,0,16,hs).rotation.z = Math.PI/2;
+box(.62,.46,.66,'#73242e',-.95,-.02,0,hs);
+box(.62,.46,.66,'#73242e',.95,-.02,0,hs);
+hs.position.set(0,1.22,-.55);
+for (let i=0;i<5;i++){
+  const c = add(new T.Mesh(new T.TorusGeometry(.17,.045,6,14), mat('#5e1c25')), phone);
+  c.rotation.x = Math.PI/2; c.position.set(1.4, .55 + i*.16, -.25 - i*.1);
+}
+phone.position.set(dx+6.3, deskTop+.3, 1.5); phone.rotation.y = -.32;
 
 /* mug + papers */
 const mug = cyl(.46,.4,1,'#efe7d6',dx-5,deskTop+.78,2.9);
@@ -330,7 +408,7 @@ function shelfBooks(parent, bx, by, bz, n, s){
 /* top shelf books (clickable -> resume) */
 const bookGroup = new T.Group(); scene.add(bookGroup);
 shelfBooks(bookGroup, hx-5, shelfYs[3]+.25, 2, 8, 0);
-shelfBooks(bookGroup, hx+.7, shelfYs[3]+.25, 2, 6, 3);
+shelfBooks(null,      hx+.7, shelfYs[3]+.25, 2, 6, 3);
 /* decorative books */
 shelfBooks(null, hx-5, shelfYs[2]+.25, 2, 6, 2);
 shelfBooks(null, hx+.7, shelfYs[0]+.25, 2, 7, 5);
@@ -338,22 +416,40 @@ shelfBooks(null, hx-5, shelfYs[1]+.25, 2, 5, 1);
 
 /* basketball (clickable -> about) */
 const ball = new T.Group(); scene.add(ball);
-sph(1.15,'#c26f2a',0,0,0,ball);
-const seamGeo = new T.TorusGeometry(1.15,.05,8,44);
-[0, Math.PI/2].forEach(r => { const s = add(new T.Mesh(seamGeo, mat('#3a2a1c')), ball); s.rotation.y = r; });
-add(new T.Mesh(seamGeo, mat('#3a2a1c')), ball).rotation.x = Math.PI/2;
+const BR = 1.15;
+sph(BR,'#cf7324',0,0,0,ball);
+const seamMat = mat('#2b1a0f');
+const greatSeam = new T.TorusGeometry(BR,.042,8,52);
+const eq = add(new T.Mesh(greatSeam, seamMat), ball); eq.rotation.x = Math.PI/2;
+add(new T.Mesh(greatSeam, seamMat), ball);                      /* vertical meridian */
+/* the two curved side seams that make it read as a basketball */
+[-1,1].forEach(sgn => {
+  const d = BR*.6, r = Math.sqrt(BR*BR - d*d);
+  const c = add(new T.Mesh(new T.TorusGeometry(r,.042,8,44), seamMat), ball);
+  c.rotation.y = Math.PI/2; c.position.x = sgn*d;
+});
 ball.position.set(hx-2.6, shelfYs[0]+1.4, 2);
 
 /* globe (clickable -> languages) */
 const globe = new T.Group(); scene.add(globe);
-const gball = sph(1.05,'#35738c',0,1.15,0,globe);
-[[.42,.5,.9,.5],[.3,-.45,.75,.4],[.36,.1,1.35,.3]].forEach(([r,ax,ay,az]) => {
-  const c = add(new T.Mesh(new T.SphereGeometry(r,12,10), mat('#86a86a')), globe);
-  c.scale.set(1,.55,.5); c.position.set(ax*.72, 1.15+ay*.55, az*.62);
-});
-cyl(.1,.1,2.3,'#4a4136',0,1.1,0,10,globe).rotation.z = .3;
-cyl(.55,.68,.3,'#4a4136',0,0,0,24,globe);
-globe.position.set(hx+2.8, shelfYs[1]+.25, 2);
+const GR = .85;
+const gTilt = new T.Group(); globe.add(gTilt); gTilt.rotation.z = .41;   /* 23.5 degrees */
+sph(GR,'#2f6f94',0,0,0,gTilt);
+/* landmasses drawn as patches of the sphere itself, so they sit flush */
+[[0.1,1.0,0.55,0.95],[2.3,1.05,0.45,1.5],[1.0,1.25,0.45,0.75],[1.75,0.45,1.85,0.4],[3.6,0.7,0.5,0.6]]
+  .forEach(([ps,pl,ts,tl]) => {
+    const g = new T.SphereGeometry(GR*1.012, 20, 14, ps, pl, ts, tl);
+    add(new T.Mesh(g, mat('#7fa85c')), gTilt);
+  });
+add(new T.Mesh(new T.SphereGeometry(GR*1.012,18,12,0,Math.PI*2,0,.32), mat('#eef3f4')), gTilt);
+add(new T.Mesh(new T.SphereGeometry(GR*1.012,18,12,0,Math.PI*2,2.82,.32), mat('#eef3f4')), gTilt);
+const axis = add(new T.Mesh(new T.CylinderGeometry(.045,.045,GR*2.45,10), mat('#c9a24a',.45)), globe);
+axis.rotation.z = .41;
+const mer = add(new T.Mesh(new T.TorusGeometry(GR*1.2,.07,10,44,Math.PI*1.45), mat('#c9a24a',.45)), globe);
+mer.rotation.y = Math.PI/2; mer.rotation.z = .41 - Math.PI*.27;
+cyl(.07,.07,.55,'#c9a24a',0,-GR*1.45,0,10,globe);
+cyl(.46,.62,.26,'#5a4030',0,-GR*1.72,0,24,globe);
+globe.position.set(hx+2.8, shelfYs[1]+.25 + GR*1.85, 2);
 
 /* plant in a cubby (clickable -> beyond) */
 const plant = new T.Group(); scene.add(plant);
@@ -371,19 +467,34 @@ for (let i=0;i<7;i++){
 }
 plant.position.set(hx+2.7, shelfYs[2]+.25, 2);
 
-/* ---- floating wall shelf with frames (decor) ---- */
+/* ---- floating wall shelf: academic career ---- */
 const shY = 8.2, sx = -9.4, sz = -3.5;
 box(8.2,.42,1.8,'#e3b93f',sx,shY,sz);
 box(.5,.5,1.4,'#c99a1d',sx-3.4,shY-.45,sz);
 box(.5,.5,1.4,'#c99a1d',sx+3.4,shY-.45,sz);
-const picture = (x,y,w,h,c) => {
-  box(w,h,.2,'#e8e0cf',x,y,sz);
-  box(w-.55,h-.55,.07,c,x,y,sz+.14);
-  box(w*.5,.14,.5,'#cdbfa6',x,y-h/2+.1,sz+.4);
-};
-picture(sx-1.5, shY+1.5, 2.1, 2.3, '#8c7b64');
-picture(sx+1.1, shY+1.35, 1.8, 2, '#5c6b7a');
-cyl(.3,.42,.8,'#9c6b4a',sx+3, shY+.6,sz+.1);
+
+const academia = new T.Group(); scene.add(academia);
+/* stack of textbooks */
+[['#8e3b32',0],['#3e5e7e',.46],['#5e7a4f',.92],['#c9a64a',1.38]].forEach(([c,y],i) => {
+  const b = box(2.9-i*.16,.44,1.7,c,0,y+.22,0,academia);
+  b.rotation.y = (i%2 ? .07 : -.06);
+});
+/* two standing beside the stack */
+box(.34,2.2,1.5,'#a6512e',2.05,1.1,0,academia);
+box(.3,1.95,1.5,'#6b5aa6',2.4,.98,0,academia).rotation.z = .1;
+/* graduation cap on top of the stack */
+const cap = new T.Group(); academia.add(cap);
+cyl(.46,.5,.34,'#2b2721',0,.17,0,20,cap);
+const board = box(1.75,.11,1.75,'#2b2721',0,.4,0,cap); board.rotation.y = .62;
+const tas = cyl(.045,.045,.62,'#e8bf49',.72,.16,.5,8,cap); tas.rotation.x = .35; tas.rotation.z = .2;
+sph(.1,'#e8bf49',.78,-.12,.62,cap);
+cap.position.set(-.1,1.82,0);
+/* rolled diploma with a ribbon */
+const dip = new T.Group(); academia.add(dip);
+cyl(.2,.2,2.1,'#f7f0e2',0,0,0,18,dip).rotation.z = Math.PI/2;
+cyl(.22,.22,.26,'#b2364f',0,0,0,18,dip).rotation.z = Math.PI/2;
+dip.position.set(-2.5,.42,.25); dip.rotation.y = .18;
+academia.position.set(sx-.5, shY+.21, sz+.05);
 
 /* wall clock (decor, fills the empty wall) */
 const clock = new T.Group(); scene.add(clock);
@@ -401,13 +512,43 @@ const TARGETS = [
   {g: ball,     id:'about',     label:'About me'},
   {g: bookGroup,id:'resume',    label:'R\u00e9sum\u00e9'},
   {g: globe,    id:'languages', label:'Languages'},
-  {g: plant,    id:'beyond',    label:'Beyond work'}
+  {g: plant,    id:'beyond',    label:'Beyond work'},
+  {g: academia, id:'education',  label:'Academic career'}
 ];
 /* anchor = real top-centre of each object, measured from its geometry,
    so the hover label can never drift away from the thing it names */
 const _b3 = new T.Box3();
+/* two rims: a pale one next to the object and a dark one outside it, so the
+   outline stays readable against both the dark wall and the yellow bookcase */
+const rimLight = new T.MeshBasicMaterial({color:0xfdf4df, side:T.BackSide});
+const rimDark  = new T.MeshBasicMaterial({color:0x1d1611, side:T.BackSide});
+/* one clean silhouette: the whole object scaled up about its own centre,
+   drawn back-faces-only so it only shows where it pokes out past the object */
+const makeRim = (g, centre, matl, f, m) => {
+  const o = g.clone(true);
+  o.traverse(n => {
+    n.raycast = () => {};
+    n.castShadow = false; n.receiveShadow = false;
+    if (n.isMesh) { n.material = matl; n.scale.multiplyScalar(m); }
+  });
+  o.scale.multiplyScalar(f);
+  o.position.copy(g.position).sub(centre).multiplyScalar(f).add(centre);
+  o.visible = false;
+  return o;
+};
 TARGETS.forEach(t => {
-  t.g.traverse(o => { o.userData.hit = t; });
+  /* a slightly fattened copy of the very same shape, drawn behind it:
+     on hover it reads as an outline that traces the object, not a box.
+     cloned before the group is tagged, because the tag refers back to the group */
+  t.g.updateWorldMatrix(true, true);
+  _b3.setFromObject(t.g);
+  const centre = _b3.getCenter(new T.Vector3());
+  const rimO = makeRim(t.g, centre, rimDark,  1.07, 1.075);
+  const rimI = makeRim(t.g, centre, rimLight, 1.03, 1.03);
+  t.g.parent.add(rimO); t.g.parent.add(rimI);
+  t.rims = [rimO, rimI];
+
+  t.g.traverse(n => { n.userData.hit = t; });
   t.g.updateWorldMatrix(true, true);
   _b3.setFromObject(t.g);
   t.anchor = new T.Vector3((_b3.min.x+_b3.max.x)/2, _b3.max.y + .2, (_b3.min.z+_b3.max.z)/2);
@@ -429,7 +570,7 @@ function frameCamera(){
   if (portrait) {
     /* a wide room cannot fit a tall screen without shrinking everything to
        nothing, so show a comfortable slice and let the finger move across it */
-    const visW = Math.min(16, Math.max(11, SPAN_W * camera.aspect * 1.25));
+    const visW = Math.min(13.5, Math.max(10, SPAN_W * camera.aspect * 1.25));
     camDist = Math.min((visW/2) / (Math.tan(vfov) * camera.aspect), 90);
   } else {
     camDist = Math.min(Math.max(dH, dW) * 1.04, 70);
@@ -551,12 +692,7 @@ function loop(now){
     camera.lookAt(FOCUS.x + panX, aimY, FOCUS.z);
   }
 
-  if (hintsOn) {
-    const p = (Math.sin(now/280)*.5+.5);
-    TARGETS.forEach(t => t.g.traverse(o => {
-      if (o.isMesh) { o.material.emissive = o.material.emissive || new T.Color(); o.material.emissive.setRGB(p*.22, p*.17, p*.04); }
-    }));
-  }
+  TARGETS.forEach(t => { const on = hintsOn || t === hovered; t.rims[0].visible = on; t.rims[1].visible = on; });
 
   if (pointerInside) {
     const hit = pick({clientX: ptrClient.x, clientY: ptrClient.y});
@@ -621,7 +757,6 @@ menubtn.addEventListener('click', () => setPanel(panel.getAttribute('data-open')
 hintbtn.addEventListener('click', () => {
   hintsOn = !hintsOn;
   hintbtn.setAttribute('aria-pressed', hintsOn ? 'true' : 'false');
-  if (!hintsOn) TARGETS.forEach(t => t.g.traverse(o => { if (o.isMesh && o.material.emissive) o.material.emissive.setRGB(0,0,0); }));
 });
 addEventListener('keydown', e => {
   if (e.key === 'Escape') { reader.getAttribute('data-open') === 'true' ? closeReader() : setPanel(false); }
