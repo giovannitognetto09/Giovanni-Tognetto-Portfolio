@@ -156,7 +156,8 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 </div>
 
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+ "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
 
 <script>
@@ -169,6 +170,8 @@ window.addEventListener('error', function(e){
 
 <script type="module">
 import * as T from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* ---------- content for the reader ---------- */
 const CAL = 'https://calendar.app.google/UVRpSX8X4jy7VhyV8';
@@ -286,14 +289,20 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
 renderer.toneMapping = T.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.18;
+renderer.toneMappingExposure = 1.22;
 host.appendChild(renderer.domElement);
 
 /* matte materials: high roughness, no metalness -> no plastic sheen */
-const mat = (c, r = .95) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:0});
+const mat = (c, r = .95) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:0, envMapIntensity:.28});
 const add = (o, parent) => { o.castShadow = true; o.receiveShadow = true; (parent||scene).add(o); return o; };
 const place = (m,x,y,z,p) => { m.position.set(x,y,z); return add(m,p); };
-const box = (w,h,d,c,x,y,z,p) => place(new T.Mesh(new T.BoxGeometry(w,h,d), mat(c)), x,y,z,p);
+const box = (w,h,d,c,x,y,z,p) => {
+  /* a small bevel on every edge: the single biggest difference between
+     "built in code" and "designed" -- real objects have no razor edges */
+  w = Math.abs(w); h = Math.abs(h); d = Math.abs(d);
+  const r = Math.min(.085, Math.min(w,h,d) * .4);
+  return place(new T.Mesh(new RoundedBoxGeometry(w,h,d,2,r), mat(c)), x,y,z,p);
+};
 const cyl = (rt,rb,h,c,x,y,z,s=24,p) => place(new T.Mesh(new T.CylinderGeometry(rt,rb,h,s), mat(c)), x,y,z,p);
 const sph = (r,c,x,y,z,p) => place(new T.Mesh(new T.SphereGeometry(r,32,24), mat(c)), x,y,z,p);
 
@@ -305,11 +314,13 @@ const rug = cyl(7.4,7.4,.12,'#7a4f45',-5.6,FLOOR+.06,4.2,44); rug.castShadow = f
 rug.scale.set(1,1,.72);
 
 /* light */
-scene.add(new T.HemisphereLight(0xfff0dc, 0x5a4a38, 1.25));
-scene.add(new T.AmbientLight(0xffe9d0, .22));
-const key = new T.DirectionalLight(0xffe8c8, 1.85);
+const pmrem = new T.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), .04).texture;
+scene.add(new T.HemisphereLight(0xfff0dc, 0x5a4a38, 1.05));
+scene.add(new T.AmbientLight(0xffe9d0, .1));
+const key = new T.DirectionalLight(0xffe8c8, 1.95);
 key.position.set(-9,21,27); key.castShadow = true;
-key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0012; key.shadow.radius = 5;
+key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0005; key.shadow.normalBias = .02; key.shadow.radius = 4;
 Object.assign(key.shadow.camera,{left:-28,right:28,top:24,bottom:-18,near:1,far:70});
 scene.add(key);
 const fill = new T.DirectionalLight(0xd8c0a0, .7); fill.position.set(16,8,14); scene.add(fill);
@@ -321,7 +332,7 @@ const deskTop = .5, dx = -6.8;
 box(14,.55,5.8,'#7a512f',dx,deskTop,1.4);
 box(13,.6,.7,'#5d3c21',dx,deskTop-.7,-1.1);
 [[-6.4,3.6],[6.4,3.6],[-6.4,-.6],[6.4,-.6]].forEach(([ox,oz]) =>
-  box(.62,FLOOR-deskTop+.3,.62,'#5a3a20',dx+ox,(FLOOR+deskTop)/2,oz));
+  box(.62,deskTop-FLOOR+.3,.62,'#5a3a20',dx+ox,(FLOOR+deskTop)/2,oz));
 box(12,.35,3.4,'#5d3c21',dx,FLOOR+2.1,1.4);
 
 /* chair, behind the desk */
@@ -379,7 +390,8 @@ for (let i=0;i<5;i++){
   const c = add(new T.Mesh(new T.TorusGeometry(.17,.045,6,14), mat('#5e1c25')), phone);
   c.rotation.x = Math.PI/2; c.position.set(1.4, .55 + i*.16, -.25 - i*.1);
 }
-phone.position.set(dx+6.3, deskTop+.3, 1.5); phone.rotation.y = -.32;
+phone.position.set(dx+6.2, deskTop+.3, 1.6); phone.rotation.y = -.32;
+phone.scale.setScalar(1.3);   /* big enough to tap with a thumb */
 
 /* mug + papers */
 const mug = cyl(.46,.4,1,'#efe7d6',dx-5,deskTop+.78,2.9);
@@ -495,6 +507,43 @@ cyl(.2,.2,2.1,'#f7f0e2',0,0,0,18,dip).rotation.z = Math.PI/2;
 cyl(.22,.22,.26,'#b2364f',0,0,0,18,dip).rotation.z = Math.PI/2;
 dip.position.set(-2.5,.42,.25); dip.rotation.y = .18;
 academia.position.set(sx-.5, shY+.21, sz+.05);
+
+/* desk lamp: a real warm light source, so the desk has a pool of light
+   instead of being lit from nowhere */
+const lamp = new T.Group(); scene.add(lamp);
+cyl(.58,.74,.24,'#2f5d52',0,.12,0,24,lamp);
+cyl(.26,.26,.2,'#2f5d52',0,.3,0,16,lamp);
+const arm1 = cyl(.1,.1,3.0,'#2f5d52',0,0,0,12,lamp);
+arm1.position.set(.18,1.75,0); arm1.rotation.z = -.11;
+const arm2 = cyl(.09,.09,2.5,'#2f5d52',0,0,0,12,lamp);
+arm2.position.set(1.4,3.3,0); arm2.rotation.z = 1.12;   /* reaches out over the desk */
+const shadeMat = new T.MeshStandardMaterial({color:new T.Color('#2f5d52'), roughness:.9, metalness:0, side:T.DoubleSide, envMapIntensity:.28});
+const shade = add(new T.Mesh(new T.ConeGeometry(.8,1.05,24,1,true), shadeMat), lamp);
+shade.position.set(2.5,3.3,0); shade.rotation.z = -.38;   /* opening faces down at the desk */
+const bulb = add(new T.Mesh(new T.SphereGeometry(.2,14,10), new T.MeshBasicMaterial({color:0xffe3b4})), lamp);
+bulb.castShadow = false; bulb.position.set(2.66,2.86,0);
+lamp.position.set(dx-6.5, deskTop+.3, .5);
+const lampLight = new T.PointLight(0xffc98a, 52, 16, 2);
+lampLight.position.set(dx-3.85, deskTop+2.9, .7);
+scene.add(lampLight);
+
+/* pen cup */
+const cup = new T.Group(); scene.add(cup);
+cyl(.42,.38,1.1,'#3e5e7e',0,.55,0,20,cup);
+[['#e8bf49',.12,-.08,.2],['#b2364f',-.1,.1,-.1],['#2b2721',.04,-.02,.12]].forEach(([c,ox,oz,t],i)=>{
+  const pen = cyl(.07,.07,1.9,c,ox,1.25,oz,8,cup);
+  pen.rotation.z = t; pen.rotation.x = (i-1)*.14;
+});
+cup.position.set(dx+1.9, deskTop+.28, 2.6);
+
+/* sticky notes and a small frame on the bare wall above the desk */
+const WALLZ = -4.42;
+[['#e8bf49',-4.4,5.9,.1],['#8fc08a',-3.1,6.35,-.14],['#e49a7e',-3.4,5.0,.06]].forEach(([c,x,y,r])=>{
+  box(1.15,1.15,.06,c,x,y,WALLZ).rotation.z = r;
+});
+box(2.5,3.1,.16,'#e8e0cf',-6.7,5.75,WALLZ);
+box(2.05,2.6,.05,'#7d8f9c',-6.7,5.9,WALLZ+.07);
+box(2.05,.42,.05,'#5e7a4f',-6.7,4.75,WALLZ+.07);
 
 /* wall clock (decor, fills the empty wall) */
 const clock = new T.Group(); scene.add(clock);
