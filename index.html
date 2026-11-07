@@ -32,13 +32,16 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
   linear-gradient(0deg,rgb(var(--scrim-rgb)/.8) 0%,rgb(var(--scrim-rgb)/.34) 26%,transparent 48%)}
 
 /* label follows its object, positioned from 3D each frame */
-.chip{position:absolute;z-index:6;transform:translate(-50%,-140%);
+.chip{position:absolute;z-index:6;transform:translate(-50%,-115%);
   padding:5px 13px;border:1.5px solid var(--ink);border-radius:999px;background:var(--accent);color:var(--ink);
   font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
   opacity:0;transition:opacity .16s;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 .chip[data-on=true]{opacity:1}
 
-.actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:7;transition:opacity .25s}
+.actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:9200;
+  transition:opacity .25s, transform .32s cubic-bezier(.3,0,.1,1)}
+body[data-panel=open] .actions{transform:translateX(calc(-1 * min(320px,86vw) + 2%))}
+body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .actions[data-hidden=true]{opacity:0;visibility:hidden}
 .pill{min-height:44px;padding:0 16px;border-radius:999px;cursor:pointer;
   border:1px solid rgb(var(--light-rgb)/.28);background:rgb(var(--scrim-rgb)/.55);
@@ -72,7 +75,10 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
 .reader-scrim{position:absolute;inset:0;background:rgba(24,18,15,.7);backdrop-filter:blur(2px)}
 .sheet{position:relative;width:min(880px,100%);max-height:84vh;overflow:auto;padding:clamp(26px,4.4vw,52px);
   border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 36px 70px rgba(0,0,0,.5)}
-.closeX{position:absolute;top:-54px;right:0;width:46px;height:46px;border-radius:999px;border:0;background:var(--accent);color:var(--ink);font-size:18px;cursor:pointer}
+.closeX{position:absolute;top:22px;right:22px;z-index:3;width:48px;height:48px;border-radius:999px;border:0;
+  background:var(--accent);color:var(--ink);font-size:18px;line-height:1;cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.45);transition:transform .15s}
+.closeX:hover{transform:scale(1.08)}
 .r-name{margin:0 0 4px;font-family:var(--fd);font-weight:400;font-size:clamp(30px,4.2vw,46px);line-height:1.05}
 .r-role{margin:0 0 20px;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--brand)}
 .r-rule{height:2px;background:var(--ink);margin-bottom:22px}
@@ -93,7 +99,7 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
   .title{font-size:30px}
   .lede{font-size:14.5px;max-width:none}
   .r-grid{grid-template-columns:1fr;gap:18px}
-  .closeX{top:8px;right:8px;background:rgba(46,33,28,.8);color:var(--paper)}
+  .closeX{top:12px;right:12px;width:42px;height:42px}
 }
 </style>
 </head>
@@ -111,7 +117,7 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
 
   <div class="intro">
     <h1 class="title">Welcome to my office</h1>
-    <p class="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
+    <p class="lede" id="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
     <div class="counter" id="counter">0 of 7 discovered</div>
   </div>
 </div>
@@ -137,14 +143,22 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
 
 <div class="reader" id="reader" data-open="false" role="dialog" aria-modal="true" aria-label="Reader">
   <div class="reader-scrim" data-close-reader></div>
+  <button class="closeX" type="button" aria-label="Close" data-close-reader>✕</button>
   <div class="sheet">
-    <button class="closeX" type="button" aria-label="Close" data-close-reader>✕</button>
     <div id="reader-body"></div>
   </div>
 </div>
 
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
+
+<script>
+/* if the 3D fails, say so on screen instead of hanging on "Setting up the office" */
+window.addEventListener('error', function(e){
+  var l = document.getElementById('loading');
+  if (l) l.textContent = 'Scene error: ' + (e.message || 'unknown');
+});
 </script>
 
 <script type="module">
@@ -205,8 +219,8 @@ const CONTENT = {
 /* ---------- scene ---------- */
 const host = document.getElementById('scene');
 const scene = new T.Scene();
-scene.background = new T.Color('#2b241e');
-scene.fog = new T.Fog('#2b241e', 46, 86);
+scene.background = new T.Color('#3b322a');
+scene.fog = new T.Fog('#3b322a', 60, 110);
 
 const camera = new T.PerspectiveCamera(30, 1, .1, 200);
 const renderer = new T.WebGLRenderer({antialias:true});
@@ -214,135 +228,196 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
 renderer.toneMapping = T.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.18;
 host.appendChild(renderer.domElement);
 
-/* matte materials: high roughness, no metalness → no plastic sheen */
-const mat = (c, r = .95) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:0, flatShading:false});
+/* matte materials: high roughness, no metalness -> no plastic sheen */
+const mat = (c, r = .95) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:0});
 const add = (o, parent) => { o.castShadow = true; o.receiveShadow = true; (parent||scene).add(o); return o; };
-const box = (w,h,d,c,x,y,z,p) => add(Object.assign(new T.Mesh(new T.BoxGeometry(w,h,d), mat(c)), {position:new T.Vector3(x,y,z)}), p);
-const cyl = (rt,rb,h,c,x,y,z,s=24,p) => add(Object.assign(new T.Mesh(new T.CylinderGeometry(rt,rb,h,s), mat(c)), {position:new T.Vector3(x,y,z)}), p);
-const sph = (r,c,x,y,z,p) => add(Object.assign(new T.Mesh(new T.SphereGeometry(r,32,24), mat(c)), {position:new T.Vector3(x,y,z)}), p);
+const place = (m,x,y,z,p) => { m.position.set(x,y,z); return add(m,p); };
+const box = (w,h,d,c,x,y,z,p) => place(new T.Mesh(new T.BoxGeometry(w,h,d), mat(c)), x,y,z,p);
+const cyl = (rt,rb,h,c,x,y,z,s=24,p) => place(new T.Mesh(new T.CylinderGeometry(rt,rb,h,s), mat(c)), x,y,z,p);
+const sph = (r,c,x,y,z,p) => place(new T.Mesh(new T.SphereGeometry(r,32,24), mat(c)), x,y,z,p);
 
 /* room */
-const wall = box(70,30,1,'#3f382f',0,11,-4); wall.castShadow = false;
-const floor = box(70,1,20,'#241f19',0,-4.5,5); floor.castShadow = false;
+const FLOOR = -5.2;
+const wall = box(80,34,1,'#55493c',0,12,-5); wall.castShadow = false;
+const floor = box(80,1,26,'#3a3029',0,FLOOR-.5,7); floor.castShadow = false;
+const rug = cyl(7.4,7.4,.12,'#7a4f45',-5.6,FLOOR+.06,4.2,44); rug.castShadow = false;
+rug.scale.set(1,1,.72);
 
 /* light */
-scene.add(new T.HemisphereLight(0xffeedd, 0x2a221a, .6));
-const key = new T.DirectionalLight(0xffe6c2, 1.5);
-key.position.set(-11,15,13); key.castShadow = true;
+scene.add(new T.HemisphereLight(0xfff0dc, 0x5a4a38, 1.25));
+scene.add(new T.AmbientLight(0xffe9d0, .22));
+const key = new T.DirectionalLight(0xffe8c8, 1.85);
+key.position.set(-9,21,27); key.castShadow = true;
 key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0012; key.shadow.radius = 5;
-Object.assign(key.shadow.camera,{left:-26,right:26,top:22,bottom:-16,near:1,far:60});
+Object.assign(key.shadow.camera,{left:-28,right:28,top:24,bottom:-18,near:1,far:70});
 scene.add(key);
-const fill = new T.DirectionalLight(0xcdb294, .35); fill.position.set(12,6,10); scene.add(fill);
-const warm = new T.PointLight(0xffd9a0, 16, 30, 2); warm.position.set(-7.5,8,2); scene.add(warm);
+const fill = new T.DirectionalLight(0xd8c0a0, .7); fill.position.set(16,8,14); scene.add(fill);
+const warmL = new T.PointLight(0xffd49a, 90, 34, 2); warmL.position.set(-8,6,7); scene.add(warmL);
+const warmR = new T.PointLight(0xffd9a8, 70, 30, 2); warmR.position.set(9,6,8); scene.add(warmR);
 
 /* ---- desk ---- */
-const deskY = -1.2, dx = -7.2;
-box(13,.5,5.4,'#6b4729',dx,deskY,1.6);
-box(12,.5,.6,'#56381f',dx,deskY-.55,-.7);
-[[-6,3.6],[6,3.6],[-6,-.4],[6,-.4]].forEach(([ox,oz]) => box(.6,6,.6,'#52351d',dx+ox,deskY-3.2,oz));
-box(11.4,.35,3.6,'#56381f',dx,deskY-3.1,1.6);
+const deskTop = .5, dx = -6.8;
+box(14,.55,5.8,'#7a512f',dx,deskTop,1.4);
+box(13,.6,.7,'#5d3c21',dx,deskTop-.7,-1.1);
+[[-6.4,3.6],[6.4,3.6],[-6.4,-.6],[6.4,-.6]].forEach(([ox,oz]) =>
+  box(.62,FLOOR-deskTop+.3,.62,'#5a3a20',dx+ox,(FLOOR+deskTop)/2,oz));
+box(12,.35,3.4,'#5d3c21',dx,FLOOR+2.1,1.4);
 
-/* laptop (clickable → work) */
+/* chair back, behind the desk */
+const chair = box(4.6,3.4,.5,'#4a3b2d',dx+.4,FLOOR+4.4,5.9); chair.rotation.x = .08;
+
+/* laptop (clickable -> work) */
 const laptop = new T.Group(); scene.add(laptop);
-box(5.4,.3,3.6,'#aba498',0,.4,2.2,laptop);
+box(5.6,.3,3.6,'#bdb6a7',0,0,0,laptop);
+box(4.6,.03,2.1,'#908a7d',0,.17,.5,laptop);
+box(3.2,.05,.5,'#a8a193',0,.17,-1.1,laptop);
 const lid = new T.Group(); laptop.add(lid);
-box(5.4,3.3,.25,'#2b2721',0,1.65,0,lid);
-box(4.9,2.85,.06,'#0d0b08',0,1.65,.16,lid);
-[['#b23a2f',.5,-1.6],['#d9b24c',.95,-.75],['#5e9e79',1.45,.1],['#7c6bd8',2,.95]]
-  .forEach(([c,h,x]) => box(.52,h,.04,c,x,.55+h/2,.2,lid));
-lid.position.set(0,.5,-1.75); lid.rotation.x = -.16;
-laptop.position.set(dx-.4, deskY, .45);
+box(5.6,3.4,.24,'#332e27',0,1.7,0,lid);
+box(5.05,2.9,.06,'#15120e',0,1.72,.15,lid);
+[['#c74a38',.6,-1.7],['#e8c35a',1.15,-.8],['#5fa87d',1.75,.1],['#8a78e0',2.4,1],['#d98a3a',1.3,1.85]]
+  .forEach(([c,h,x]) => box(.5,h,.04,c,x,.72+h/2,.19,lid));
+lid.position.set(0,.14,-1.72); lid.rotation.x = -.2;
+laptop.position.set(dx-1.6, deskTop+.42, 1.2);
+laptop.rotation.y = .09;
 
-/* notebook (clickable → services) */
+/* notebook (clickable -> services) */
 const notebook = new T.Group(); scene.add(notebook);
-box(2.6,.22,1.9,'#e8bf49',0,0,0,notebook);
-for (let i=0;i<3;i++) box(1.8,.03,.1,'#2a241c',.05,.12,-.45+i*.45,notebook);
-notebook.position.set(dx+3.9, deskY+.36, 2.5); notebook.rotation.y = -.22;
+box(3.9,.45,2.9,'#e8bf49',0,0,0,notebook);
+box(3.5,.08,2.5,'#f7f0e2',0,.26,0,notebook);
+for (let i=0;i<5;i++) box(2.6,.04,.1,'#4a4136',.06,.31,-.85+i*.42,notebook);
+cyl(.09,.09,2.8,'#2a241c',-1.5,.42,0,10,notebook).rotation.z = Math.PI/2;
+notebook.position.set(dx+4.3, deskTop+.5, 2.5);
+notebook.rotation.y = -.26; notebook.rotation.x = -.1;
 
-/* mug */
-cyl(.42,.42,.85,'#efe7d6',dx-4.6,deskY+.68,2.6);
+/* phone on a stand (clickable -> contact) */
+const phone = new T.Group(); scene.add(phone);
+box(1.5,.22,1.1,'#2f2822',0,.11,.26,phone);
+const slab = new T.Group(); phone.add(slab);
+box(1.2,2.5,.2,'#1d1b19',0,1.25,0,slab);
+box(1.04,2.18,.06,'#123532',0,1.28,.12,slab);
+box(.36,.08,.05,'#3b3b39',0,2.3,.14,slab);
+sph(.1,'#6fe0ae',0,.5,.14,slab);
+slab.position.set(0,.18,-.16); slab.rotation.x = -.2;
+phone.position.set(dx+6.6, deskTop+.28, 1.5); phone.rotation.y = -.34;
+
+/* mug + papers */
+const mug = cyl(.46,.4,1,'#efe7d6',dx-5,deskTop+.78,2.9);
+const hdl = add(new T.Mesh(new T.TorusGeometry(.3,.08,8,18), mat('#efe7d6')));
+hdl.position.set(dx-4.52,deskTop+.8,2.9); hdl.rotation.y = Math.PI/2;
+box(2.1,.07,1.5,'#f2ead9',dx-4.3,deskTop+.31,-.3).rotation.y = .3;
 
 /* ---- bookcase ---- */
-const hx = 7.6, bw = 11, bd = 3.4;
-box(bw,.5,bd,'#cc9d1f',hx,-4,2);
-[-0.5,3,6.5,9.6].forEach(y => box(bw,.5,bd,'#e3b93f',hx,y,2));
-box(.5,13,bd,'#d5ad33',hx-5.3,2.8,2);
-box(.5,13,bd,'#d5ad33',hx+5.3,2.8,2);
-box(.5,13,bd,'#dab534',hx,2.8,2);
-box(bw,13,.3,'#9c7a18',hx,2.8,.5).castShadow = false;
+const hx = 8.6, bw = 11.4, bd = 3.6;
+const shelfYs = [FLOOR+.4, FLOOR+3.9, FLOOR+7.4, FLOOR+10.9, FLOOR+14.2];
+shelfYs.forEach((y,i) => box(bw,.5,bd,i?'#e3b93f':'#c99a1d',hx,y,1.8));
+const bcMidY = (shelfYs[0]+shelfYs[4])/2, bcH = shelfYs[4]-shelfYs[0];
+box(.5,bcH,bd,'#d5ad33',hx-5.45,bcMidY,1.8);
+box(.5,bcH,bd,'#d5ad33',hx+5.45,bcMidY,1.8);
+box(.45,bcH,bd,'#dab534',hx,bcMidY,1.8);
+box(bw,bcH,.3,'#a07c17',hx,bcMidY,.2).castShadow = false;
 
 function shelfBooks(parent, bx, by, bz, n, s){
-  const cl = ['#8e3b32','#3e5e7e','#c9a64a','#5e7a4f','#a6512e','#6b5aa6','#c0b7a4'];
+  const cl = ['#9c4338','#3e5e7e','#c9a64a','#5e7a4f','#a6512e','#6b5aa6','#cfc5b1'];
   for (let j=0;j<n;j++){
-    const h = 1.5+(j%3)*.35, w = .22+(j%4)*.07;
-    box(w,h,1.5,cl[(j+s)%7], bx+j*.42, by+h/2, bz, parent);
+    const h = 1.6+(j%3)*.38, w = .26+(j%4)*.08;
+    const b = box(w,h,1.6,cl[(j+s)%7], bx+j*.46, by+h/2, bz, parent);
+    if (j%5===4){ b.rotation.z = .22; b.position.y -= .06; }
   }
 }
-/* top shelf books (clickable → resume) */
+/* top shelf books (clickable -> resume) */
 const bookGroup = new T.Group(); scene.add(bookGroup);
-shelfBooks(bookGroup, hx-4.9, 9.85, 2.2, 9, 0);
-shelfBooks(bookGroup, hx+.6, 9.85, 2.2, 5, 3);
+shelfBooks(bookGroup, hx-5, shelfYs[3]+.25, 2, 8, 0);
+shelfBooks(bookGroup, hx+.7, shelfYs[3]+.25, 2, 6, 3);
 /* decorative books */
-shelfBooks(null, hx-4.9, 6.75, 2.2, 6, 2);
-shelfBooks(null, hx-4.9, 3.25, 2.2, 4, 5);
+shelfBooks(null, hx-5, shelfYs[2]+.25, 2, 6, 2);
+shelfBooks(null, hx+.7, shelfYs[0]+.25, 2, 7, 5);
+shelfBooks(null, hx-5, shelfYs[1]+.25, 2, 5, 1);
 
-/* basketball (clickable → about) */
+/* basketball (clickable -> about) */
 const ball = new T.Group(); scene.add(ball);
-sph(1.05,'#c26f2a',0,0,0,ball);
-const seamGeo = new T.TorusGeometry(1.05,.045,8,40);
-[0, Math.PI/2].forEach(r => { const s = add(new T.Mesh(seamGeo, mat('#2a1f16')), ball); s.rotation.y = r; });
-ball.position.set(hx-3.2, .6, 2.2);
+sph(1.15,'#c26f2a',0,0,0,ball);
+const seamGeo = new T.TorusGeometry(1.15,.05,8,44);
+[0, Math.PI/2].forEach(r => { const s = add(new T.Mesh(seamGeo, mat('#3a2a1c')), ball); s.rotation.y = r; });
+add(new T.Mesh(seamGeo, mat('#3a2a1c')), ball).rotation.x = Math.PI/2;
+ball.position.set(hx-2.6, shelfYs[0]+1.4, 2);
 
-/* globe (clickable → languages) */
+/* globe (clickable -> languages) */
 const globe = new T.Group(); scene.add(globe);
-sph(.95,'#2f6b86',0,.85,0,globe);
-cyl(.5,.6,.28,'#2a241c',0,0,0,24,globe);
-globe.position.set(hx+2.6, 3.4, 2.2);
+const gball = sph(1.05,'#35738c',0,1.15,0,globe);
+[[.42,.5,.9,.5],[.3,-.45,.75,.4],[.36,.1,1.35,.3]].forEach(([r,ax,ay,az]) => {
+  const c = add(new T.Mesh(new T.SphereGeometry(r,12,10), mat('#86a86a')), globe);
+  c.scale.set(1,.55,.5); c.position.set(ax*.72, 1.15+ay*.55, az*.62);
+});
+cyl(.1,.1,2.3,'#4a4136',0,1.1,0,10,globe).rotation.z = .3;
+cyl(.55,.68,.3,'#4a4136',0,0,0,24,globe);
+globe.position.set(hx+2.8, shelfYs[1]+.25, 2);
 
-/* rotary phone (clickable → contact) */
-const phone = new T.Group(); scene.add(phone);
-box(2.3,.75,1.5,'#dd8a9a',0,0,0,phone);
-const dial = add(new T.Mesh(new T.CylinderGeometry(.62,.62,.12,28), mat('#eeadba')), phone);
-dial.rotation.x = Math.PI/2; dial.position.set(0,.15,.78);
-const handset = add(new T.Mesh(new T.CapsuleGeometry(.26,1.7,6,12), mat('#e89fae')), phone);
-handset.rotation.z = Math.PI/2; handset.position.set(0,.62,-.1);
-phone.position.set(hx+2.6, .05, 2.1); phone.rotation.y = -.2;
-
-/* wall shelf + plant (clickable → beyond) + frames */
-const shY = 7.4, sx = -8.4;
-box(7.4,.4,1.6,'#e3b93f',sx,shY,-2.4);
+/* plant in a cubby (clickable -> beyond) */
 const plant = new T.Group(); scene.add(plant);
-cyl(.78,.6,.9,'#241e16',0,.65,0,24,plant);
-for (let i=0;i<6;i++){
-  const a = (i/6)*Math.PI*2, L = 1.7+(i%3)*.9;
-  const v = add(new T.Mesh(new T.CylinderGeometry(.05,.05,L,6), mat('#4f8a3d')), plant);
-  v.position.set(Math.cos(a)*.5, .2-L/2, Math.sin(a)*.35); v.rotation.z = Math.cos(a)*.22;
-  const leaf = add(new T.Mesh(new T.SphereGeometry(.22,10,8), mat('#6aa84f')), plant);
-  leaf.scale.set(1,.42,1); leaf.position.set(Math.cos(a)*.62, .2-L, Math.sin(a)*.4);
+cyl(.72,.52,1.1,'#a9603f',0,.55,0,24,plant);
+cyl(.78,.78,.18,'#bb6e49',0,1.1,0,24,plant);
+for (let i=0;i<7;i++){
+  const a = (i/7)*Math.PI*2 + .4, L = 1.5+(i%3)*.55, lean = .3+(i%2)*.14;
+  const st = add(new T.Mesh(new T.CylinderGeometry(.055,.075,L,6), mat('#4e7f3c')), plant);
+  st.position.set(Math.cos(a)*.3, 1.1+L/2, Math.sin(a)*.26);
+  st.rotation.z = -Math.cos(a)*lean; st.rotation.x = Math.sin(a)*lean;
+  const lf = add(new T.Mesh(new T.SphereGeometry(.34,12,10), mat(i%2?'#6aa84f':'#7cb860')), plant);
+  lf.scale.set(1,.34,.72);
+  lf.position.set(Math.cos(a)*(.3+L*lean*.52), 1.1+L*.99, Math.sin(a)*(.26+L*lean*.46));
+  lf.rotation.y = -a; lf.rotation.z = -Math.cos(a)*lean;
 }
-plant.position.set(sx-2.1, shY+.2, -2.3);
-const picture = (x,y,w,h,c) => { box(w,h,.18,'#e4dccb',x,y,-2.1); box(w-.5,h-.5,.06,c,x,y,-1.98); };
-picture(sx+.9, shY+1.4, 1.9, 2.1, '#8c7b64');
-picture(sx+3, shY+1.3, 1.7, 1.8, '#5c6b7a');
+plant.position.set(hx+2.7, shelfYs[2]+.25, 2);
+
+/* ---- floating wall shelf with frames (decor) ---- */
+const shY = 8.2, sx = -9.4, sz = -3.5;
+box(8.2,.42,1.8,'#e3b93f',sx,shY,sz);
+box(.5,.5,1.4,'#c99a1d',sx-3.4,shY-.45,sz);
+box(.5,.5,1.4,'#c99a1d',sx+3.4,shY-.45,sz);
+const picture = (x,y,w,h,c) => {
+  box(w,h,.2,'#e8e0cf',x,y,sz);
+  box(w-.55,h-.55,.07,c,x,y,sz+.14);
+  box(w*.5,.14,.5,'#cdbfa6',x,y-h/2+.1,sz+.4);
+};
+picture(sx-1.5, shY+1.5, 2.1, 2.3, '#8c7b64');
+picture(sx+1.1, shY+1.35, 1.8, 2, '#5c6b7a');
+cyl(.3,.42,.8,'#9c6b4a',sx+3, shY+.6,sz+.1);
+
+/* wall clock (decor, fills the empty wall) */
+const clock = new T.Group(); scene.add(clock);
+const face = cyl(1.5,1.5,.3,'#efe7d6',0,0,0,36,clock); face.rotation.x = Math.PI/2;
+const rim = add(new T.Mesh(new T.TorusGeometry(1.5,.16,10,36), mat('#4a3b2d')), clock);
+box(.12,1,.08,'#3a322a',0,.3,.2,clock);
+box(.1,.7,.08,'#8a3b32',.22,.1,.2,clock).rotation.z = -1.1;
+clock.position.set(.6, 9.4, -4.2);
 
 /* ---------- clickable objects ---------- */
 const TARGETS = [
-  {g: laptop,   id:'work',      label:'Selected work', top: 3.6},
-  {g: notebook, id:'services',  label:'Services',      top: .4},
-  {g: phone,    id:'contact',   label:'Say hello',     top: 1.1},
-  {g: ball,     id:'about',     label:'About me',      top: 1.3},
-  {g: bookGroup,id:'resume',    label:'Résumé',        top: 2.3},
-  {g: globe,    id:'languages', label:'Languages',     top: 2.1},
-  {g: plant,    id:'beyond',    label:'Beyond work',   top: 1.2}
+  {g: laptop,   id:'work',      label:'Selected work'},
+  {g: notebook, id:'services',  label:'Services'},
+  {g: phone,    id:'contact',   label:'Say hello'},
+  {g: ball,     id:'about',     label:'About me'},
+  {g: bookGroup,id:'resume',    label:'R\u00e9sum\u00e9'},
+  {g: globe,    id:'languages', label:'Languages'},
+  {g: plant,    id:'beyond',    label:'Beyond work'}
 ];
-TARGETS.forEach(t => t.g.traverse(o => { o.userData.hit = t; }));
+/* anchor = real top-centre of each object, measured from its geometry,
+   so the hover label can never drift away from the thing it names */
+const _b3 = new T.Box3();
+TARGETS.forEach(t => {
+  t.g.traverse(o => { o.userData.hit = t; });
+  t.g.updateWorldMatrix(true, true);
+  _b3.setFromObject(t.g);
+  t.anchor = new T.Vector3((_b3.min.x+_b3.max.x)/2, _b3.max.y + .2, (_b3.min.z+_b3.max.z)/2);
+});
 
 /* ---------- camera framing: fit the whole room ---------- */
-const FOCUS = new T.Vector3(0, 3.2, 1);
-const SPAN_W = 32, SPAN_H = 20;
+const FOCUS = new T.Vector3(.4, 2.9, 1.4);
+const ROOM_L = -13.6, ROOM_R = 14.4;      /* how far the furniture actually reaches */
+let camDist = 60, panX = 0, panMin = 0, panMax = 0, portrait = false, aimY = 2.9;
+const SPAN_W = 32.5, SPAN_H = 19.5;
 function frameCamera(){
   const w = host.clientWidth, h = host.clientHeight;
   renderer.setSize(w, h, false);
@@ -350,10 +425,24 @@ function frameCamera(){
   const vfov = T.MathUtils.degToRad(camera.fov) / 2;
   const dH = (SPAN_H/2) / Math.tan(vfov);
   const dW = (SPAN_W/2) / (Math.tan(vfov) * camera.aspect);
-  const dist = Math.min(Math.max(dH, dW) * 1.04, 70);
-  camera.position.set(FOCUS.x, FOCUS.y + dist*0.10, FOCUS.z + dist);
-  camera.lookAt(FOCUS);
+  portrait = camera.aspect < 1.05;
+  if (portrait) {
+    /* a wide room cannot fit a tall screen without shrinking everything to
+       nothing, so show a comfortable slice and let the finger move across it */
+    const visW = Math.min(16, Math.max(11, SPAN_W * camera.aspect * 1.25));
+    camDist = Math.min((visW/2) / (Math.tan(vfov) * camera.aspect), 90);
+  } else {
+    camDist = Math.min(Math.max(dH, dW) * 1.04, 70);
+  }
+  const halfW = camDist * Math.tan(vfov) * camera.aspect;
+  panMin = Math.min(0, (ROOM_L + halfW) - FOCUS.x);
+  panMax = Math.max(0, (ROOM_R - halfW) - FOCUS.x);
+  panX = Math.min(panMax, Math.max(panMin, panX));
+  aimY = portrait ? 1.5 : FOCUS.y;
+  camera.position.set(FOCUS.x + panX, aimY + camDist*0.10, FOCUS.z + camDist);
+  camera.lookAt(FOCUS.x + panX, aimY, FOCUS.z);
   camera.updateProjectionMatrix();
+  document.body.setAttribute('data-pannable', (panMax - panMin > .5) ? 'true' : 'false');
 }
 frameCamera();
 addEventListener('resize', frameCamera);
@@ -365,6 +454,7 @@ const ptr = new T.Vector2();
 const look = new T.Vector2();      // gentle parallax target
 const lookNow = new T.Vector2();
 let hovered = null, hintsOn = false, pointerInside = false;
+const ptrClient = {x:0, y:0};
 
 function pick(ev){
   const r = renderer.domElement.getBoundingClientRect();
@@ -379,27 +469,69 @@ function pick(ev){
 }
 renderer.domElement.addEventListener('pointermove', ev => {
   pointerInside = true;
+  ptrClient.x = ev.clientX; ptrClient.y = ev.clientY;
   const r = renderer.domElement.getBoundingClientRect();
   look.set(((ev.clientX - r.left)/r.width)*2 - 1, -((ev.clientY - r.top)/r.height)*2 + 1);
-  const hit = pick(ev);
-  hovered = hit;
-  renderer.domElement.style.cursor = hit ? 'pointer' : 'default';
 });
-renderer.domElement.addEventListener('pointerleave', () => { pointerInside = false; hovered = null; look.set(0,0); });
-renderer.domElement.addEventListener('click', ev => { const hit = pick(ev); if (hit) openReader(hit.id); });
+renderer.domElement.addEventListener('pointerleave', () => { pointerInside = false; hovered = null; look.set(0,0); renderer.domElement.style.cursor = 'default'; });
+/* drag (or swipe) sideways to move across the room */
+let dragFrom = null, dragPan = 0, dragged = 0;
+const worldPerPx = () => (2 * camDist * Math.tan(T.MathUtils.degToRad(camera.fov)/2) * camera.aspect)
+                         / renderer.domElement.getBoundingClientRect().width;
+renderer.domElement.addEventListener('pointerdown', ev => {
+  if (panMax - panMin < .5) return;
+  dragFrom = ev.clientX; dragPan = panX; dragged = 0;
+  renderer.domElement.setPointerCapture(ev.pointerId);
+});
+renderer.domElement.addEventListener('pointermove', ev => {
+  if (dragFrom === null) return;
+  const dx = ev.clientX - dragFrom;
+  dragged = Math.max(dragged, Math.abs(dx));
+  panX = Math.min(panMax, Math.max(panMin, dragPan - dx * worldPerPx()));
+  if (dragged > 6) renderer.domElement.style.cursor = 'grabbing';
+});
+const endDrag = ev => {
+  if (dragFrom === null) return;
+  dragFrom = null;
+  renderer.domElement.style.cursor = hovered ? 'pointer' : 'default';
+  try { renderer.domElement.releasePointerCapture(ev.pointerId); } catch(e){}
+};
+renderer.domElement.addEventListener('pointerup', endDrag);
+renderer.domElement.addEventListener('pointercancel', endDrag);
+
+renderer.domElement.addEventListener('click', ev => {
+  if (dragged > 6) { dragged = 0; return; }   /* that was a swipe, not a tap */
+  const hit = pick(ev);
+  if (hit) openReader(hit.id);
+});
+
+/* on touch there is no hover, so a tap shows the label before it opens */
+renderer.domElement.addEventListener('pointerdown', ev => {
+  if (ev.pointerType !== 'mouse') {
+    ptrClient.x = ev.clientX; ptrClient.y = ev.clientY;
+    pointerInside = true;
+  }
+});
 
 /* label follows the object in 3D */
 const pos = new T.Vector3();
 function placeChip(){
   if (!hovered) { chip.setAttribute('data-on','false'); return; }
-  pos.set(0,0,0); hovered.g.getWorldPosition(pos); pos.y += hovered.top;
-  pos.project(camera);
+  pos.copy(hovered.anchor).project(camera);
   const r = renderer.domElement.getBoundingClientRect();
   chip.style.left = (r.left + (pos.x*.5+.5)*r.width) + 'px';
   chip.style.top  = (r.top + (-pos.y*.5+.5)*r.height) + 'px';
   chip.textContent = hovered.label;
   chip.setAttribute('data-on','true');
 }
+
+/* dev hook: only on #dev, used to verify hit-testing after changes */
+if (location.hash === '#dev') window.__dev = {
+  TARGETS, camera, renderer,
+  pickAt(x,y){ const h = pick({clientX:x, clientY:y}); return h ? h.id : null; },
+  project(v){ const q = v.clone().project(camera); const r = renderer.domElement.getBoundingClientRect();
+    return {x: r.left + (q.x*.5+.5)*r.width, y: r.top + (-q.y*.5+.5)*r.height}; }
+};
 
 /* ---------- loop: parallax + hints pulse ---------- */
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -411,10 +543,12 @@ function loop(now){
   if (!reduce) {
     lookNow.x += (look.x - lookNow.x) * Math.min(1, dt*2.6);
     lookNow.y += (look.y - lookNow.y) * Math.min(1, dt*2.6);
-    const d = camera.position.distanceTo(FOCUS);
-    camera.position.x = FOCUS.x + lookNow.x * 2.6;
-    camera.position.y = FOCUS.y + d*0.10 - lookNow.y * 1.4;
-    camera.lookAt(FOCUS);
+    /* kept small on purpose: a bigger sway slides the room out from under the
+       cursor, so the thing you are pointing at would change while you aim. */
+    const sway = portrait ? 0 : .34;
+    camera.position.x = FOCUS.x + panX + lookNow.x * sway;
+    camera.position.y = aimY + camDist*0.10 - lookNow.y * (portrait ? 0 : .2);
+    camera.lookAt(FOCUS.x + panX, aimY, FOCUS.z);
   }
 
   if (hintsOn) {
@@ -424,11 +558,21 @@ function loop(now){
     }));
   }
 
+  if (pointerInside) {
+    const hit = pick({clientX: ptrClient.x, clientY: ptrClient.y});
+    if (hit !== hovered) {
+      hovered = hit;
+      renderer.domElement.style.cursor = hit ? 'pointer' : 'default';
+    }
+  }
   placeChip();
   renderer.render(scene, camera);
 }
 requestAnimationFrame(loop);
 document.getElementById('loading').remove();
+if (matchMedia('(hover: none)').matches)
+  document.getElementById('lede').textContent =
+    'Swipe to look around, tap anything that catches your eye — or use the menu.';
 
 /* ---------- reader, menu, hints, counter ---------- */
 const reader = document.getElementById('reader');
@@ -461,7 +605,11 @@ function closeReader(){
   actions.setAttribute('data-hidden','false');
   if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
-const setPanel = o => { panel.setAttribute('data-open', o?'true':'false'); menubtn.setAttribute('aria-expanded', o?'true':'false'); };
+const setPanel = o => {
+  panel.setAttribute('data-open', o?'true':'false');
+  menubtn.setAttribute('aria-expanded', o?'true':'false');
+  document.body.setAttribute('data-panel', o?'open':'closed');
+};
 
 document.addEventListener('click', e => {
   const t = e.target.closest('.item[data-open]');
