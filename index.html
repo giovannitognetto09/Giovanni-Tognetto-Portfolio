@@ -86,6 +86,15 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .reader-scrim{position:absolute;inset:0;background:rgba(24,18,15,.7);backdrop-filter:blur(2px)}
 .sheet{position:relative;width:min(880px,100%);max-height:84vh;overflow:auto;padding:clamp(26px,4.4vw,52px);
   border-radius:10px;background:var(--paper);color:var(--ink);box-shadow:0 36px 70px rgba(0,0,0,.5)}
+/* the sketchfab player lives in its own frame, so it only gets a box, never
+   the room: it loads when the panel opens and not before */
+.embed3d{position:relative;width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;
+  margin:6px 0 8px;background:#241c17;box-shadow:0 14px 36px rgba(0,0,0,.3)}
+.embed3d iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:transparent}
+.embed-fallback{position:absolute;inset:0;margin:0;display:flex;align-items:center;justify-content:center;
+  padding:18px;text-align:center;font-size:13px;line-height:1.5;color:#c9bcab}
+.r-credit{font-size:12px;line-height:1.5;opacity:.62;margin:0 0 16px}
+.r-credit a{color:inherit}
 .r-img{width:100%;max-width:460px;border-radius:14px;display:block;margin:4px 0 16px;box-shadow:0 14px 36px rgba(0,0,0,.34)}
 .r-wide{max-width:100%}
 .closeX{position:absolute;top:22px;right:22px;z-index:3;width:48px;height:48px;border-radius:999px;border:0;
@@ -264,10 +273,24 @@ const CONTENT = {
     <img class="r-img r-wide" src="${NOVE_IMG}" alt="Nove, a vizsla, resting on the sofa">
     <p class="r-p">This is Nove. He supervises every call, sleeps through most of them, and has strong opinions about when the working day should end.</p>`,
 
-  nove: head('Nove','Head of morale') + `
-    <img class="r-img" src="${NOVE_IMG}" alt="Nove, a vizsla, resting on the sofa">
+  nove: head('Nove','Head of morale') + `<div class="r-grid"><div>
+    <img class="r-img r-wide" src="${NOVE_IMG}" alt="Nove, a vizsla, resting on the sofa">
     <p class="r-p">Nove is a vizsla, which means he is never more than two metres away from me and treats the end of a work session as a personal victory.</p>
-    <p class="r-p">He is the reason I take walking meetings, and the reason there is dog hair on absolutely everything I own.</p>`,
+    <p class="r-p">He is the reason I take walking meetings, and the reason there is dog hair on absolutely everything I own.</p>
+    </div><div>
+    <p class="r-lab">The breed, in three dimensions</p>
+    <div class="embed3d">
+      <p class="embed-fallback">The 3D viewer loads from Sketchfab. If it stays blank, their service is unreachable from your network.</p>
+      <iframe title="Vizsla Dog (Game Ready)" loading="lazy" allowfullscreen
+        allow="autoplay; fullscreen; xr-spatial-tracking"
+        src="https://sketchfab.com/models/066fbffd77d240b780398cddb583f403/embed?autostart=1&ui_infos=0&ui_theme=dark"></iframe>
+    </div>
+    <p class="r-credit">Drag to turn him around. Model:
+      <a href="https://sketchfab.com/3d-models/vizsla-dog-game-ready-066fbffd77d240b780398cddb583f403" target="_blank" rel="noreferrer nofollow">Vizsla Dog (Game Ready)</a>
+      by <a href="https://sketchfab.com/Nyilonelycompany" target="_blank" rel="noreferrer nofollow">Nyilonelycompany</a>
+      on <a href="https://sketchfab.com" target="_blank" rel="noreferrer nofollow">Sketchfab</a>
+      &mdash; a vizsla, not Nove himself.</p>
+    </div></div>`,
 
   education: head('Academic career','Bocconi \u00b7 UPF Barcelona \u00b7 IE Business School') + `<div class="r-grid"><div>
     <div class="r-block"><h3 class="r-h">IE Business School</h3>
