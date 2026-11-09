@@ -32,6 +32,14 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
   linear-gradient(0deg,rgb(var(--scrim-rgb)/.8) 0%,rgb(var(--scrim-rgb)/.34) 26%,transparent 48%)}
 
 /* label follows its object, positioned from 3D each frame */
+/* a photographed scene falls off at the corners and carries a little grain.
+   both are free here: plain CSS over the canvas, no extra render passes. */
+.grade{position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(118% 88% at 50% 44%, rgba(0,0,0,0) 42%, rgba(0,0,0,.44) 100%)}
+.grain{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.055;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+  background-size:160px 160px}
+@media (prefers-reduced-motion: reduce){ .grain{display:none} }
 .chip{position:absolute;z-index:6;transform:translate(-50%,-115%);
   padding:5px 13px;border:1.5px solid var(--ink);border-radius:999px;background:var(--accent);color:var(--ink);
   font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
@@ -113,6 +121,9 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 <div class="page">
   <div id="scene"><div class="loading" id="loading">Setting up the office</div></div>
   <div class="scrim"></div>
+  <div class="grade" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
   <div class="chip" id="chip" aria-hidden="true"></div>
 
   <div class="brand">Giovanni Tognetto</div>
@@ -313,7 +324,54 @@ renderer.toneMappingExposure = 1.22;
 host.appendChild(renderer.domElement);
 
 /* matte materials: high roughness, no metalness -> no plastic sheen */
-const mat = (c, r = .95) => new T.MeshStandardMaterial({color:new T.Color(c), roughness:r, metalness:0, envMapIntensity:.28});
+/* Flat colour is what makes CG look like plastic: real surfaces have fine
+   relief that breaks up the highlight. One shared grain map, used as a bump
+   on every material, costs one texture and removes most of that plastic feel. */
+function grainTex(px = 512, n = 26000, a = .09){
+  const c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d');
+  g.fillStyle = '#808080'; g.fillRect(0,0,px,px);
+  for (let i=0;i<n;i++){
+    const x = Math.random()*px, y = Math.random()*px, r = Math.random()*2.4 + .55;
+    g.fillStyle = Math.random() < .5 ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a})`;
+    g.beginPath(); g.arc(x,y,r,0,6.3); g.fill();
+  }
+  const t = new T.CanvasTexture(c);
+  t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(3,3);
+  return t;
+}
+/* wood: the desk, floor and chair carry a grain rather than a flat brown */
+function woodTex(px = 512){
+  const c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0,0,px,px);
+  for (let i=0;i<90;i++){
+    const y = Math.random()*px, dark = .06 + Math.random()*.16;
+    g.strokeStyle = `rgba(90,55,25,${dark})`;
+    g.lineWidth = .5 + Math.random()*2.8;
+    g.beginPath();
+    for (let x=0;x<=px;x+=6) g.lineTo(x, y + Math.sin(x*.021 + i)*3.2 + Math.sin(x*.006 + i*2)*7);
+    g.stroke();
+  }
+  for (let i=0;i<9000;i++){
+    const x = Math.random()*px, y = Math.random()*px;
+    g.fillStyle = `rgba(70,42,18,${Math.random()*.07})`;
+    g.fillRect(x,y,1.6,1);
+  }
+  const t = new T.CanvasTexture(c);
+  t.wrapS = t.wrapT = T.RepeatWrapping; t.colorSpace = T.SRGBColorSpace;
+  return t;
+}
+const GRAIN = grainTex(), WOOD = woodTex();
+const mat = (c, r = .95) => new T.MeshStandardMaterial({
+  color:new T.Color(c), roughness:r, metalness:0, envMapIntensity:.28,
+  bumpMap:GRAIN, bumpScale:.016
+});
+const wood = (c, rep = 2) => {
+  const w = WOOD.clone(); w.needsUpdate = true; w.repeat.set(rep,rep);
+  return new T.MeshStandardMaterial({color:new T.Color(c), map:w, roughness:.88, metalness:0,
+    envMapIntensity:.28, bumpMap:w, bumpScale:.03});
+};
 const add = (o, parent) => { o.castShadow = true; o.receiveShadow = true; (parent||scene).add(o); return o; };
 const place = (m,x,y,z,p) => { m.position.set(x,y,z); return add(m,p); };
 const box = (w,h,d,c,x,y,z,p) => {
@@ -381,6 +439,7 @@ const link = (a, b, r, c, p, m) => {
 const FLOOR = -5.2;
 const wall = box(80,34,1,'#55493c',0,12,-5); wall.castShadow = false;
 const floor = box(80,1,26,'#3a3029',0,FLOOR-.5,7); floor.castShadow = false;
+floor.material = wood('#5e4a38',9);
 const rug = cyl(7.4,7.4,.12,'#7a4f45',-5.6,FLOOR+.06,4.2,44); rug.castShadow = false;
 rug.scale.set(1,1,.72);
 
@@ -400,7 +459,7 @@ const warmR = new T.PointLight(0xffd9a8, 70, 30, 2); warmR.position.set(9,6,8); 
 
 /* ---- desk ---- */
 const deskTop = .5, dx = -6.8;
-box(14,.55,5.8,'#7a512f',dx,deskTop,1.4);
+box(14,.55,5.8,'#7a512f',dx,deskTop,1.4).material = wood('#9a6a3d',2.4);
 box(13,.6,.7,'#5d3c21',dx,deskTop-.7,-1.1);
 [[-6.4,3.6],[6.4,3.6],[-6.4,-.6],[6.4,-.6]].forEach(([ox,oz]) =>
   box(.62,deskTop-FLOOR+.3,.62,'#5a3a20',dx+ox,(FLOOR+deskTop)/2,oz));
@@ -408,10 +467,11 @@ box(12,.35,3.4,'#5d3c21',dx,FLOOR+2.1,1.4);
 
 /* chair, behind the desk */
 const chairG = new T.Group(); scene.add(chairG);
-box(4.4,.42,4.2,'#5a4631',0,0,0,chairG);
+box(4.4,.42,4.2,'#5a4631',0,0,0,chairG).material = wood('#73573a',1.6);
 [[-1.75,-1.65],[1.75,-1.65],[-1.75,1.65],[1.75,1.65]].forEach(([ox,oz]) =>
   box(.32,2.9,.32,'#43341f',ox,-1.66,oz,chairG));
 const cback = box(4.4,3.3,.4,'#5a4631',0,1.85,1.9,chairG); cback.rotation.x = .1;
+cback.material = wood('#73573a',1.4);
 box(4.4,.3,.4,'#43341f',0,3.5,1.72,chairG).rotation.x = .1;
 chairG.position.set(dx+.4, FLOOR+3.1, 6.4);
 
