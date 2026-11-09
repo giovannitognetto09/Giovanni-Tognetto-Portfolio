@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio — Giovanni Tognetto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Karla:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --stage:#2e2620;--ink:#2e211c;--paper:#f7f0e2;--light:#f5e9d9;
+    --accent:#f0c64a;--brand:#b2364f;
+    --fd:'Playfair Display',Georgia,serif;--fu:'Karla',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    padding:32px 16px;background:var(--stage);color:var(--light);font-family:var(--fu);
+    -webkit-font-smoothing:antialiased}
+  .card{width:min(620px,100%);padding:clamp(30px,6vw,56px);border-radius:14px;
+    background:var(--paper);color:var(--ink);box-shadow:0 34px 70px rgba(0,0,0,.45);text-align:center}
+  .tag{display:inline-block;margin-bottom:22px;padding:6px 14px;border-radius:999px;
+    background:var(--accent);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+  h1{margin:0 0 14px;font-family:var(--fd);font-weight:600;font-size:clamp(30px,6vw,44px);line-height:1.1}
+  p{margin:0 auto 10px;max-width:42ch;font-size:16px;line-height:1.65;color:rgba(46,33,28,.82)}
+  .rule{width:54px;height:3px;margin:26px auto;border-radius:2px;background:var(--brand);opacity:.5}
+  .back{display:inline-flex;align-items:center;gap:8px;margin-top:26px;min-height:48px;
+    padding:13px 22px;border-radius:12px;background:var(--ink);color:var(--paper);
+    font-weight:700;font-size:15px;text-decoration:none;transition:transform .16s ease,filter .16s ease}
+  .back:hover{transform:translateY(-1px);filter:brightness(1.15)}
+  .mail{color:var(--brand);font-weight:700}
+</style>
+</head>
+<body>
+  <main class="card">
+    <span class="tag">Work in progress</span>
+    <h1>The full portfolio is being built</h1>
+    <p>I'm putting the detailed case studies together right now — the projects, the numbers behind them, and what I actually did on each one.</p>
+    <div class="rule"></div>
+    <p>In the meantime, the office has the short version: selected work, services and my résumé are all in there.</p>
+    <p>Want the detail sooner? Write to <a class="mail" href="mailto:business.tognetto@gmail.com">business.tognetto@gmail.com</a>.</p>
+    <a class="back" href="index.html">← Back to the office</a>
+  </main>
+</body>
+</html>

@@ -47,9 +47,13 @@ body{font-family:var(--fu);color:var(--light);overflow:hidden}
   opacity:0;transition:opacity .16s;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 .chip[data-on=true]{opacity:1}
 
-.brand{position:absolute;top:4%;left:4%;z-index:8;pointer-events:none;
-  font-family:var(--fd);font-size:clamp(16px,1.6vw,21px);letter-spacing:.005em;color:var(--light);
+.brand{position:absolute;top:4%;left:4%;z-index:8;pointer-events:none;color:var(--light);
   text-shadow:0 2px 14px rgba(0,0,0,.55)}
+.brand b{display:block;font-family:var(--fd);font-weight:600;
+  font-size:clamp(21px,2.5vw,34px);line-height:1.05;letter-spacing:.07em;text-transform:uppercase}
+.brand span{display:block;margin-top:5px;font-family:var(--fu);font-weight:400;
+  font-size:clamp(11px,1.05vw,14px);letter-spacing:.17em;text-transform:uppercase;
+  color:rgb(var(--light-rgb)/.72)}
 .actions{position:absolute;top:4%;right:4%;display:flex;gap:8px;z-index:9200;
   transition:opacity .25s, transform .32s cubic-bezier(.3,0,.1,1)}
 body[data-panel=open] .actions{transform:translateX(calc(-1 * min(320px,86vw) + 2%))}
@@ -81,6 +85,13 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .group{display:flex;flex-direction:column;gap:1px;margin:4px 0;padding-top:6px;border-top:1px solid rgb(var(--light-rgb)/.14)}
 .group-label{padding:4px 12px 2px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:rgb(var(--light-rgb)/.55)}
 .sub{padding-left:22px;color:rgb(var(--light-rgb)/.85)}
+/* named apart from the reader's own .cta, which is a dark pill on paper */
+.panel-cta{display:flex;align-items:center;justify-content:center;gap:8px;margin:20px 2px 10px;min-height:54px;
+  padding:15px 18px;border-radius:12px;background:var(--accent);color:var(--ink);
+  font-family:var(--fu);font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  text-decoration:none;box-shadow:0 12px 26px rgba(0,0,0,.42);transition:transform .16s ease,filter .16s ease}
+.panel-cta:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.panel-cta::after{content:'\2192';font-size:17px}
 
 .reader{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:24px}
 .reader[data-open=true]{display:flex}
@@ -146,7 +157,7 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 
   <div class="chip" id="chip" aria-hidden="true"></div>
 
-  <div class="brand">Giovanni Tognetto</div>
+  <div class="brand"><b>Giovanni Tognetto</b><span>Partnership Consultant &amp; Analyst</span></div>
 
   <div class="actions" id="actions">
     <button class="pill" id="hints" type="button" aria-pressed="false">Hints</button>
@@ -156,7 +167,7 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
   <div class="intro">
     <h1 class="title">Welcome to my office</h1>
     <p class="lede" id="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
-    <div class="counter" id="counter">0 of 7 discovered</div>
+    <div class="counter" id="counter">0 of 10 discovered</div>
   </div>
 </div>
 
@@ -165,22 +176,29 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
     <span class="panel-title">Quick links</span>
     <button class="panel-close" type="button" aria-label="Close menu" data-close-panel>×</button>
   </div>
-  <button class="item" type="button" data-open="about">About me</button>
-  <button class="item" type="button" data-open="education">Academic career</button>
   <div class="group">
     <span class="group-label">Work</span>
-    <button class="item sub" type="button" data-open="work">Work portfolio</button>
     <button class="item sub" type="button" data-open="services">Services</button>
-    <a class="item sub" href="portfolio.html">Full portfolio page</a>
+    <button class="item sub" type="button" data-open="work">Work portfolio</button>
   </div>
-  <button class="item" type="button" data-open="resume">Résumé</button>
-  <button class="item" type="button" data-open="travel">Where I've been</button>
-  <button class="item" type="button" data-open="beyond">Beyond work</button>
-  <button class="item" type="button" data-open="contact">Contact</button>
-  <button class="item" type="button" data-open="nove">Nove, my work buddy</button>
-  <button class="item" type="button" data-open="buddy">My work buddy</button>
-  <button class="item" type="button" data-open="calendar">Book a call</button>
-  <a class="item" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer">Book a call →</a>
+  <div class="group">
+    <span class="group-label">About me</span>
+    <button class="item sub" type="button" data-open="about">About me</button>
+    <button class="item sub" type="button" data-open="education">Academic career</button>
+    <button class="item sub" type="button" data-open="resume">Résumé</button>
+  </div>
+  <div class="group">
+    <span class="group-label">Beyond work</span>
+    <button class="item sub" type="button" data-open="beyond">Beyond work</button>
+    <button class="item sub" type="button" data-open="travel">Where I've been</button>
+    <button class="item sub" type="button" data-open="nove">Nove, my work buddy</button>
+  </div>
+  <div class="group">
+    <span class="group-label">Contacts</span>
+    <button class="item sub" type="button" data-open="contact">Contact me</button>
+    <a class="item sub" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer">Book a call</a>
+  </div>
+  <a class="panel-cta" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer">Book a call</a>
 </nav>
 
 <div class="reader" id="reader" data-open="false" role="dialog" aria-modal="true" aria-label="Reader">
@@ -702,14 +720,20 @@ COLS.forEach(c => {
   const w = c.x1 - c.x0, cx = hx + (c.x0 + c.x1)/2;
   /* shelves span the gap BETWEEN dividers and sit a hair shallower, so no two
      surfaces are ever coplanar -- coplanar faces are what made the edges fizz */
-  c.ys.forEach(y => box(w - PT + .05, PT, bd - .09, CASE, cx, Y(y), 1.78));
-  box(w - PT + .05, c.top, .24, CASE3, cx, Y(c.top/2), .12).castShadow = false;
+  /* the top board caps the column flush with the dividers and the bottom board
+     sits on the floor -- both used to poke half a board proud of the carcass,
+     which is the lip and the little step you could see at the corners */
+  c.ys.forEach(y => {
+    const yc = y === c.top ? y - PT/2 : (y === 0 ? PT/2 : y);
+    box(w - PT + .05, PT, bd - .09, CASE, cx, Y(yc), 1.78);
+  });
+  box(w - PT + .05, c.top - PT, .24, CASE3, cx, Y((c.top - PT)/2), .12).castShadow = false;
 });
 /* a cubby: where its floor is and how wide it runs */
 const cub = (ci, i) => {
   const c = COLS[ci];
   return { x: hx + (c.x0 + c.x1)/2, left: hx + c.x0 + PT*.9,
-           y: Y(c.ys[i]) + PT/2, w: c.x1 - c.x0 - PT,
+           y: Y(c.ys[i]) + (i === 0 ? PT : PT/2), w: c.x1 - c.x0 - PT,
            h: (c.ys[i+1] !== undefined ? c.ys[i+1] - c.ys[i] : 3) - PT };
 };
 
@@ -724,9 +748,39 @@ function shelfBooks(parent, bx, by, bz, n, s){
 }
 /* résumé: top-left module */
 const bookGroup = new T.Group(); scene.add(bookGroup);
-{ const c = cub(0,0); shelfBooks(bookGroup, c.left, c.y, 2, 8, 0); }
 /* work portfolio: folders, module below it */
 const folders = new T.Group(); scene.add(folders);
+/* a label painted onto the face of a book. `up` runs the words along the
+   spine of a book standing on a shelf; otherwise they run left to right.
+   The canvas is cut to the same proportions as the face it goes on, so the
+   lettering is never stretched to fit. */
+function spineTex(txt, bg, fg, up, W, H){
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.fillStyle = bg; g.fillRect(0,0,W,H);
+  g.translate(W/2, H/2);
+  if (up) g.rotate(-Math.PI/2);
+  const long = up ? H : W, short = up ? W : H;
+  let size = short*.88;
+  g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle';
+  do { g.font = '700 ' + size.toFixed(0) + 'px Helvetica, Arial, sans-serif'; size -= 2; }
+  while (g.measureText(txt).width > long*.82 && size > 8);
+  g.fillText(txt, 0, 1);
+  const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+/* sits a hair proud of the face so it can never fight with it for depth */
+function spineLabel(bookMesh, w, h, z, txt, bg, fg, up, stretch){
+  /* stretch > 1 draws the lettering slightly extended, the way a title set on a
+     long thin book edge is, which buys readability without a taller book */
+  const k = stretch || 1;
+  const W = w >= h ? Math.round(520/k) : Math.max(44, Math.round(520*w/h));
+  const H = w >= h ? Math.max(44, Math.round(520*h/w)) : 520;
+  const pl = new T.Mesh(new T.PlaneGeometry(w, h),
+    new T.MeshStandardMaterial({map:spineTex(txt,bg,fg,up,W,H), roughness:.9, metalness:0, envMapIntensity:.22}));
+  pl.position.set(0, 0, z); pl.castShadow = false; pl.receiveShadow = false;
+  bookMesh.add(pl); return pl;
+}
 function labelTex(txt){
   const W = 360, H = 110, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
@@ -755,7 +809,18 @@ folders.rotation.y = -.42;
 /* decorative books */
 
 { const c = cub(1,0); shelfBooks(null, c.left, c.y, 2, 5, 5); }
-{ const c = cub(1,4); shelfBooks(null, c.left, c.y, 2, 5, 1); }
+{ const c = cub(0,0); shelfBooks(null, c.left, c.y, 2, 8, 0); }
+/* top shelf: the resume. a fat CV volume with its title on the spine, and a
+   few companions beside it so it reads as a shelf rather than one lone book */
+{
+  const c = cub(1,4);
+  shelfBooks(bookGroup, c.left + 1.26, c.y, 2, 3, 1);
+  const cv = box(.92,2.62,1.72,'#6d2430', c.left + .58, c.y + 1.31, 2, bookGroup);
+  spineLabel(cv, .78, 1.9, .88, 'CV', '#6d2430', '#f3e7cf', true, 1.35);
+  const band = box(.94,.09,1.74,'#d9bb6a', c.left + .58, c.y + 2.44, 2, bookGroup);
+  band.castShadow = false;
+  box(.94,.09,1.74,'#d9bb6a', c.left + .58, c.y + .2, 2, bookGroup).castShadow = false;
+}
 /* ---- two-deck DJ console ---- */
 const dj = new T.Group(); scene.add(dj);
 const DJB = '#2a2a2e', DJS = '#8d8d95', DJL = '#c6c6ce';
@@ -854,13 +919,16 @@ cyl(.09,.09,.12,'#2b2724',0,1.84,0,12,moka);
 sph(.13,'#2b2724',0,1.94,0,moka);
 /* the angular black handle */
 /* both ends sink into the upper chamber, so the handle is attached, not floating */
-link([.46,1.40,0], [.94,1.28,0], .058, '#272421', moka);
-link([.94,1.28,0], [.84,.92,0], .058, '#272421', moka);
-link([.84,.92,0], [.37,1.03,0], .055, '#272421', moka);
-sph(.075,'#272421',.46,1.40,0,moka);
-sph(.07,'#272421',.37,1.03,0,moka);
+/* one continuous rounded loop out of the upper chamber and back into it */
+const mhCurve = new T.CatmullRomCurve3([
+  new T.Vector3(.44,1.32,0), new T.Vector3(.68,1.29,0), new T.Vector3(.76,1.16,0),
+  new T.Vector3(.69,1.04,0), new T.Vector3(.43,1.01,0)
+]);
+add(new T.Mesh(new T.TubeGeometry(mhCurve, 36, .046, 10, false), mat('#272421',.5)), moka);
+sph(.056,'#272421',.44,1.32,0,moka);
+sph(.053,'#272421',.43,1.01,0,moka);
 const spout = box(.26,.2,.26,STEEL,-.52,1.42,0,moka); spout.rotation.z = .5;
-{ const c = cub(1,1); moka.position.set(c.x - .74, c.y, 1.95); }
+{ const c = cub(1,2); moka.position.set(c.x - .74, c.y, 1.95); }
 moka.rotation.y = -.3; moka.scale.setScalar(.98);
 const cups2 = new T.Group(); scene.add(cups2);
 [0,1].forEach(i => {
@@ -869,7 +937,7 @@ const cups2 = new T.Group(); scene.add(cups2);
   const h2 = add(new T.Mesh(new T.TorusGeometry(.1,.027,8,14), mat('#efe7d6')), cups2);
   h2.position.set(i*.78+.23,.2,i*.1); h2.rotation.y = Math.PI/2;
 });
-{ const c = cub(1,1); cups2.position.set(c.x + .42, c.y, 2.6); }
+{ const c = cub(1,2); cups2.position.set(c.x + .42, c.y, 2.6); }
 cups2.scale.setScalar(.86);
 
 /* a bag of coffee beside the moka */
@@ -878,7 +946,7 @@ box(.78,1.05,.44,'#6b4a33',0,.52,0,bag);
 box(.82,.17,.48,'#553a2a',0,1.1,0,bag);
 box(.5,.42,.03,'#d8c9a8',0,.6,.24,bag);
 cyl(.1,.1,.03,'#6b4a33',0,.68,.26,14,bag).rotation.x = Math.PI/2;
-{ const c = cub(1,1); bag.position.set(c.x + .72, c.y, 1.45); }
+{ const c = cub(1,2); bag.position.set(c.x + .72, c.y, 1.45); }
 bag.rotation.y = .22;
 
 /* ---- studio monitors on the top shelf ---- */
@@ -908,10 +976,13 @@ const trophy = (tx, sc) => {
   add(new T.Mesh(new T.CylinderGeometry(.1,.1,.36,14), GOLD2()), g).position.y = .49;
   const bowl = add(new T.Mesh(new T.CylinderGeometry(.35,.18,.52,20), GOLD()), g);
   bowl.position.y = .93;
-  add(new T.Mesh(new T.TorusGeometry(.33,.045,8,22), GOLD()), g).position.y = 1.18;  /* lip */
+  /* handles only -- the full rim ring arched over the top and read as a hoop */
   [-1,1].forEach(sg => {
-    const hd = add(new T.Mesh(new T.TorusGeometry(.13,.035,8,14,Math.PI), GOLD()), g);
-    hd.position.set(sg*.41,.94,0); hd.rotation.z = sg > 0 ? -Math.PI/2 : Math.PI/2;
+    const curve = new T.CatmullRomCurve3([
+      new T.Vector3(sg*.33,1.13,0), new T.Vector3(sg*.49,1.05,0),
+      new T.Vector3(sg*.5,.93,0),   new T.Vector3(sg*.37,.84,0), new T.Vector3(sg*.23,.82,0)
+    ]);
+    add(new T.Mesh(new T.TubeGeometry(curve, 26, .038, 8, false), GOLD()), g);
   });
   g.position.x = tx; g.scale.setScalar(sc);
 };
@@ -1004,8 +1075,8 @@ box(.09,.4,.56,CARB, .95,.3,1.8,car);
 box(.46,.42,1.25,RED,-.56,.4,-.2,car);                    /* sidepods */
 box(.46,.42,1.25,RED,.56,.4,-.2,car);
 box(.52,.3,.78,CARB,0,.6,.42,car);                        /* cockpit */
-const halo = add(new T.Mesh(new T.TorusGeometry(.33,.05,8,20,Math.PI), mat(CARB)), car);
-halo.position.set(0,.76,.45); halo.rotation.x = -.25;
+const halo = add(new T.Mesh(new T.TorusGeometry(.21,.034,8,20,Math.PI), mat(CARB)), car);
+halo.position.set(0,.73,.5); halo.rotation.x = -.5;
 box(.4,.52,.5,RED,0,.76,-.42,car);                        /* airbox */
 link([0,.66,-.5], [0,.46,-1.35], .21, RED, car);          /* engine cover */
 box(1.6,.09,.46,RED,0,1.06,-1.62,car);                    /* rear wing */
@@ -1126,7 +1197,7 @@ for (let i=0;i<13;i++){
   lf.position.set(tip[0], tip[1] + .03, tip[2]);
   lf.rotation.y = -a; lf.rotation.z = -Math.cos(a)*lean;
 }
-{ const c = cub(1,2); plant.position.set(c.x - .8, c.y, 2.0); }
+{ const c = cub(1,1); plant.position.set(c.x - .8, c.y, 2.0); }
 
 /* a box of bricks on the shelf below (not clickable) */
 const bricks = new T.Group(); scene.add(bricks);
@@ -1144,7 +1215,7 @@ brick(3,2,'#4e8a46',.15,.58,-.35,.15);
 brick(2,1,'#d9d2c4',-1.0,0,-.5,-.5);
 brick(2,2,'#8a5aa0',1.45,.58,-.15,-.2);
 brick(1,1,'#e0a21f',-.05,.58,.75,.3);
-{ const c = cub(1,2); bricks.position.set(c.x + .88, c.y, 2.0); }
+{ const c = cub(1,1); bricks.position.set(c.x + .88, c.y, 2.0); }
 bricks.scale.setScalar(.56);
 
 
@@ -1156,9 +1227,16 @@ box(.5,.5,1.4,'#c99a1d',sx+3.4,shY-.45,sz);
 
 const academia = new T.Group(); scene.add(academia);
 /* stack of textbooks */
-[['#8e3b32',0],['#3e5e7e',.46],['#5e7a4f',.92],['#c9a64a',1.38]].forEach(([c,y],i) => {
-  const b = box(2.9-i*.16,.44,1.7,c,0,y+.22,0,academia);
+/* bottom one stays blank; the three above carry a university each */
+const UNI = [null, 'BOCCONI', 'UPF', 'IE'];
+const UNI_INK = [null, '#eadfca', '#eef2e6', '#2b2721'];
+/* chunky volumes, so a university name actually fits on the edge. Bocconi is
+   the thickest of them -- it is the one he spent three years on. */
+[['#8e3b32',0,.5,2.95],['#3e5e7e',.5,.86,3.1],['#5e7a4f',1.36,.56,2.62],['#c9a64a',1.92,.56,2.42]]
+.forEach(([c,y,bh,w],i) => {
+  const b = box(w,bh,1.7,c,0,y+bh/2,0,academia);
   b.rotation.y = (i%2 ? .07 : -.06);
+  if (UNI[i]) spineLabel(b, w*.9, bh*.78, .87, UNI[i], c, UNI_INK[i], false, 1.25);
 });
 /* two standing beside the stack */
 box(.34,2.2,1.5,'#a6512e',2.05,1.1,0,academia);
@@ -1169,7 +1247,7 @@ cyl(.46,.5,.34,'#2b2721',0,.17,0,20,cap);
 const board = box(1.75,.11,1.75,'#2b2721',0,.4,0,cap); board.rotation.y = .62;
 const tas = cyl(.045,.045,.62,'#e8bf49',.72,.16,.5,8,cap); tas.rotation.x = .35; tas.rotation.z = .2;
 sph(.1,'#e8bf49',.78,-.12,.62,cap);
-cap.position.set(-.15,1.95,.1); cap.scale.setScalar(1.55);
+cap.position.set(-.15,2.62,.1); cap.scale.setScalar(1.55);
 /* rolled diploma with a ribbon */
 const dip = new T.Group(); academia.add(dip);
 cyl(.3,.3,3.0,'#f7f0e2',0,0,0,20,dip).rotation.z = Math.PI/2;
@@ -1238,20 +1316,40 @@ function boardTexture(){
   g.strokeStyle = '#c0392b'; g.lineWidth = 8; g.lineCap = 'round';
   g.beginPath(); g.moveTo(66,156); g.lineTo(508,161); g.stroke();
   const items = ['Partnerships + events','Three retainer clients','Madrid, remote across the EU','Launch in Q1'];
-  /* a quick flow sketch on the right, the way a real board gets used */
-  const bx = 1090, by = 236, bw = 330, bh = 112;
-  ['Reach out','Scope','Deliver'].forEach((t,i) => {
-    const y = by + i*186;
-    g.strokeStyle = '#2b3440'; g.lineWidth = 5;
-    g.beginPath(); g.roundRect(bx, y, bw, bh, 12); g.stroke();
-    g.fillStyle = '#2b3440'; g.font = '400 48px Karla, Helvetica, Arial, sans-serif';
-    g.fillText(t, bx+32, y+70);
-    if (i < 2){
-      g.strokeStyle = '#1f6f8b'; g.lineWidth = 5;
-      g.beginPath(); g.moveTo(bx+bw/2, y+bh); g.lineTo(bx+bw/2, y+180); g.stroke();
-      g.beginPath(); g.moveTo(bx+bw/2-13, y+166); g.lineTo(bx+bw/2, y+182); g.lineTo(bx+bw/2+13, y+166); g.stroke();
-    }
-  });
+  /* a growth curve sketched on the right, the way a real board gets used */
+  {
+    const ox = 905, oy = 660, cw = 500, ch = 420;
+    g.strokeStyle = '#2b3440'; g.lineWidth = 6; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(ox, oy - ch); g.lineTo(ox, oy); g.lineTo(ox + cw, oy); g.stroke();
+    const pts = [[0,.1],[.2,.2],[.4,.34],[.6,.46],[.78,.72],[1,.95]];
+    g.strokeStyle = '#1f6f8b'; g.lineWidth = 9; g.lineJoin = 'round';
+    g.beginPath();
+    pts.forEach(([u,v],i) => { const x = ox + u*cw*.92, y = oy - v*ch;
+      i ? g.lineTo(x,y) : g.moveTo(x,y); });
+    g.stroke();
+    /* a filled arrowhead, pointing along the last leg */
+    const ex = ox + cw*.92, ey = oy - .95*ch;
+    const px = ox + .78*cw*.92, py = oy - .72*ch;
+    const a = Math.atan2(ey-py, ex-px), L = 46, Wd = .42;
+    g.fillStyle = '#1f6f8b';
+    g.beginPath();
+    g.moveTo(ex + Math.cos(a)*14, ey + Math.sin(a)*14);
+    g.lineTo(ex - Math.cos(a-Wd)*L, ey - Math.sin(a-Wd)*L);
+    g.lineTo(ex - Math.cos(a+Wd)*L, ey - Math.sin(a+Wd)*L);
+    g.closePath(); g.fill();
+    g.fillStyle = 'rgba(31,111,139,.13)';
+    g.beginPath(); g.moveTo(ox, oy);
+    pts.forEach(([u,v]) => g.lineTo(ox + u*cw*.92, oy - v*ch));
+    g.lineTo(ox + cw*.92, oy); g.closePath(); g.fill();
+    /* bars of the quarters underneath the curve */
+    g.fillStyle = 'rgba(43,52,64,.5)';
+    ['Q1','Q2','Q3','Q4'].forEach((q,i) => {
+      g.font = '400 34px ' + SANS;
+      g.fillText(q, ox + 34 + i*cw*.23, oy + 48);
+    });
+    g.fillStyle = '#2b3440'; g.font = '700 40px ' + SANS;
+    g.fillText('Revenue', ox, oy - ch - 24);
+  }
   g.font = '400 54px ' + SANS;
   items.forEach((t,i) => {
     const y = 290 + i*122;
@@ -1340,7 +1438,6 @@ const TARGETS = [
   {g: beyondGroup, id:'beyond', label:'Beyond work', anchorOn: ball},
   {g: academia, id:'education', label:'Academic career'},
   {g: clock,    id:'calendar',  label:'Book a call'},
-  {g: frame,    id:'buddy',     label:'My work buddy'},
   {g: dog,      id:'nove',      label:'Nove'}
 ];
 /* anchor = real top-centre of each object, measured from its geometry,
