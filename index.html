@@ -81,6 +81,7 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .title{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(32px,4.4vw,70px);line-height:1.02;letter-spacing:-.015em}
 .lede{margin:14px 0 0;max-width:34ch;font-size:clamp(14px,1.15vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.86)}
 .intro-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;pointer-events:auto}
+.intro-cta--tight{margin-top:22px}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:13px 22px;
   border-radius:12px;font-family:var(--fu);font-size:15px;font-weight:700;letter-spacing:.04em;
   cursor:pointer;text-decoration:none;transition:transform .16s ease,filter .16s ease,background .16s ease}
@@ -210,8 +211,7 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 
   <div class="intro">
     <h1 class="title">Welcome to my office</h1>
-    <p class="lede" id="lede">Partnerships, events and the data behind them.</p>
-    <div class="intro-cta">
+    <div class="intro-cta intro-cta--tight">
       <a class="btn btn-go" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer" data-cta="hero-call">Book a free call</a>
     </div>
     <p class="hint-line">Click around and see what you find — or use the menu for a quicker way through.</p>
