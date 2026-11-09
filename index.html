@@ -8,6 +8,17 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Giovanni Tognetto — Partnerships, Marketing &amp; Data">
 <meta property="og:description" content="Freelance partner manager and marketer for events, entertainment and fast-growing brands. Based in Madrid, working across Europe.">
+<!-- If the site ever moves to its own domain, change these two URLs to match it. -->
+<meta property="og:url" content="https://giovanni-tognetto-portfolio.vercel.app/">
+<meta property="og:image" content="https://giovanni-tognetto-portfolio.vercel.app/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Giovanni Tognetto's 3D office: desk, bookshelf and a sleeping vizsla.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Giovanni Tognetto — Partnerships, Marketing &amp; Data">
+<meta name="twitter:description" content="Freelance partner manager and marketer for events, entertainment and fast-growing brands.">
+<meta name="twitter:image" content="https://giovanni-tognetto-portfolio.vercel.app/og.jpg">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -68,8 +79,34 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 
 .intro{position:absolute;left:4%;bottom:6%;width:40%;min-width:250px;pointer-events:none;z-index:5}
 .title{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(32px,4.4vw,70px);line-height:1.02;letter-spacing:-.015em}
-.lede{margin:14px 0 0;max-width:30ch;font-size:clamp(14px,1.1vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.82)}
-.counter{margin-top:20px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgb(var(--light-rgb)/.6)}
+.lede{margin:14px 0 0;max-width:34ch;font-size:clamp(14px,1.15vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.86)}
+.intro-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;pointer-events:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:13px 22px;
+  border-radius:12px;font-family:var(--fu);font-size:15px;font-weight:700;letter-spacing:.04em;
+  cursor:pointer;text-decoration:none;transition:transform .16s ease,filter .16s ease,background .16s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-go{background:var(--accent);color:var(--ink);border:0;box-shadow:0 12px 26px rgba(0,0,0,.4)}
+.btn-go:hover{filter:brightness(1.07)}
+.btn-ghost{background:rgb(var(--light-rgb)/.08);color:var(--light);border:1px solid rgb(var(--light-rgb)/.34)}
+.btn-ghost:hover{background:rgb(var(--light-rgb)/.16)}
+.hint-line{margin:18px 0 0;max-width:34ch;font-size:clamp(13px,.95vw,15px);line-height:1.5;color:rgb(var(--light-rgb)/.62)}
+.counter{margin-top:14px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgb(var(--light-rgb)/.55)}
+
+/* phones get the booking button pinned to the thumb, since the hero scrolls
+   out of reach the moment someone starts panning the room */
+.callbar{position:fixed;left:0;right:0;bottom:0;z-index:9050;display:none;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,rgb(var(--scrim-rgb)/.96),rgb(var(--scrim-rgb)/.72) 70%,transparent);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.callbar a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border-radius:12px;
+  background:var(--accent);color:var(--ink);font-family:var(--fu);font-size:15px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.callbar a::after{content:'\2192';font-size:17px}
+.callbar{transition:opacity .22s ease,transform .22s ease}
+/* toggled from js rather than off a body attribute, so there is one single
+   place that decides whether the bar is showing */
+.callbar[data-hide=true]{opacity:0;transform:translateY(12px);pointer-events:none}
+@media (max-width:899px){ .callbar{display:block} }
 
 .panel{position:fixed;top:0;right:0;z-index:9100;display:flex;flex-direction:column;
   width:min(320px,86vw);height:100dvh;padding:16px 14px;overflow-y:auto;
@@ -139,9 +176,16 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .cta:hover{background:var(--brand)}
 
 @media (max-width:899px){
-  .intro{width:auto;right:4%;bottom:5%}
+  /* clear of the sticky booking bar */
+  .intro{width:auto;right:4%;bottom:calc(4% + 68px)}
   .title{font-size:30px}
   .lede{font-size:14.5px;max-width:none}
+  .brand{max-width:45vw}
+  .brand b{font-size:19px;letter-spacing:.05em}
+  .brand span{font-size:10px;letter-spacing:.13em}
+  .intro-cta{display:none}
+  .hint-line{font-size:13px}
+  .counter{margin-top:10px}
   .r-grid{grid-template-columns:1fr;gap:18px}
   .closeX{top:12px;right:12px;width:42px;height:42px}
 }
@@ -166,9 +210,17 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 
   <div class="intro">
     <h1 class="title">Welcome to my office</h1>
-    <p class="lede" id="lede">Click around and see what you find — or use the menu for a quicker way through.</p>
+    <p class="lede" id="lede">Partnerships, events and the data behind them.</p>
+    <div class="intro-cta">
+      <a class="btn btn-go" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer" data-cta="hero-call">Book a free call</a>
+    </div>
+    <p class="hint-line">Click around and see what you find — or use the menu for a quicker way through.</p>
     <div class="counter" id="counter">0 of 10 discovered</div>
   </div>
+</div>
+
+<div class="callbar" id="callbar">
+  <a href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer" data-cta="sticky-call">Book a free call</a>
 </div>
 
 <nav class="panel" id="panel" aria-label="Quick links" data-open="false">
@@ -1626,9 +1678,11 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 document.getElementById('loading').remove();
-if (matchMedia('(hover: none)').matches)
-  document.getElementById('lede').textContent =
-    'Swipe to look around, tap anything that catches your eye — or use the menu.';
+if (matchMedia('(hover: none)').matches){
+  /* the pitch stays put on a phone; it is the browsing hint that changes */
+  const hl = document.querySelector('.hint-line');
+  if (hl) hl.textContent = 'Swipe to look around, tap anything that catches your eye — or use the menu.';
+}
 
 /* ---------- reader, menu, hints, counter ---------- */
 const reader = document.getElementById('reader');
@@ -1641,7 +1695,19 @@ const counter = document.getElementById('counter');
 
 let found = {};
 try { found = JSON.parse(localStorage.getItem('gtFound') || '{}'); } catch(e){}
-const tick = () => counter.textContent = Object.keys(found).length + ' of ' + TARGETS.length + ' discovered';
+/* a returning visitor can carry ids from an older version of the room in their
+   browser, which is how the counter managed to read "12 of 10": drop anything
+   that is not a target any more, and never count past the total. */
+{
+  const live = new Set(TARGETS.map(t => t.id));
+  let stale = false;
+  for (const k of Object.keys(found)) if (!live.has(k)) { delete found[k]; stale = true; }
+  if (stale) { try { localStorage.setItem('gtFound', JSON.stringify(found)); } catch(e){} }
+}
+const tick = () => {
+  const n = Math.min(Object.keys(found).length, TARGETS.length);
+  counter.textContent = n + ' of ' + TARGETS.length + ' discovered';
+};
 tick();
 
 let lastFocus = null;
@@ -1735,6 +1801,8 @@ function openReader(id){
   body.innerHTML = CONTENT[id];
   if (id === 'travel') initGlobe();
   reader.setAttribute('data-open','true');
+  document.body.setAttribute('data-reader','open');
+  syncCallbar();
   document.body.style.overflow = 'hidden';
   actions.setAttribute('data-hidden','true');
   chip.setAttribute('data-on','false');
@@ -1742,18 +1810,26 @@ function openReader(id){
 }
 function closeReader(){
   reader.setAttribute('data-open','false');
+  document.body.setAttribute('data-reader','closed');
+  syncCallbar();
   document.body.style.overflow = '';
   actions.setAttribute('data-hidden','false');
   if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
+const callbar = document.getElementById('callbar');
+const syncCallbar = () => {
+  const busy = panel.getAttribute('data-open') === 'true' || reader.getAttribute('data-open') === 'true';
+  if (callbar) callbar.setAttribute('data-hide', busy ? 'true' : 'false');
+};
 const setPanel = o => {
   panel.setAttribute('data-open', o?'true':'false');
   menubtn.setAttribute('aria-expanded', o?'true':'false');
   document.body.setAttribute('data-panel', o?'open':'closed');
+  syncCallbar();
 };
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('.item[data-open]');
+  const t = e.target.closest('.item[data-open], .btn[data-open]');
   if (t) { setPanel(false); openReader(t.getAttribute('data-open')); return; }
   if (e.target.closest('[data-close-reader]')) closeReader();
   if (e.target.closest('[data-close-panel]')) setPanel(false);
