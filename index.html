@@ -77,11 +77,11 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .pill:hover{border-color:rgb(var(--light-rgb)/.5)}
 .pill[aria-pressed=true],.pill[aria-expanded=true]{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:700}
 
-.intro{position:absolute;left:4%;bottom:6%;width:40%;min-width:250px;pointer-events:none;z-index:5}
-.title{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(32px,4.4vw,70px);line-height:1.02;letter-spacing:-.015em}
+.intro{position:absolute;left:4%;bottom:6%;width:auto;max-width:56%;min-width:250px;pointer-events:none;z-index:5}
+/* one line, always -- it reads as a sign over the door, not a paragraph */
+.title{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(26px,3.7vw,58px);line-height:1.05;letter-spacing:-.015em;white-space:nowrap}
 .lede{margin:14px 0 0;max-width:34ch;font-size:clamp(14px,1.15vw,18px);line-height:1.5;color:rgb(var(--light-rgb)/.86)}
-.intro-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;pointer-events:auto}
-.intro-cta--tight{margin-top:22px}
+.intro-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;pointer-events:auto}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:13px 22px;
   border-radius:12px;font-family:var(--fu);font-size:15px;font-weight:700;letter-spacing:.04em;
   cursor:pointer;text-decoration:none;transition:transform .16s ease,filter .16s ease,background .16s ease}
@@ -90,7 +90,7 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 .btn-go:hover{filter:brightness(1.07)}
 .btn-ghost{background:rgb(var(--light-rgb)/.08);color:var(--light);border:1px solid rgb(var(--light-rgb)/.34)}
 .btn-ghost:hover{background:rgb(var(--light-rgb)/.16)}
-.hint-line{margin:18px 0 0;max-width:34ch;font-size:clamp(13px,.95vw,15px);line-height:1.5;color:rgb(var(--light-rgb)/.62)}
+.hint-line{margin:14px 0 0;max-width:36ch;font-size:clamp(13px,.95vw,15px);line-height:1.5;color:rgb(var(--light-rgb)/.62)}
 .counter{margin-top:14px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgb(var(--light-rgb)/.55)}
 
 /* phones get the booking button pinned to the thumb, since the hero scrolls
@@ -179,7 +179,7 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 @media (max-width:899px){
   /* clear of the sticky booking bar */
   .intro{width:auto;right:4%;bottom:calc(4% + 68px)}
-  .title{font-size:30px}
+  .title{font-size:clamp(21px,6.9vw,28px)}
   .lede{font-size:14.5px;max-width:none}
   .brand{max-width:45vw}
   .brand b{font-size:19px;letter-spacing:.05em}
@@ -211,10 +211,10 @@ body[data-panel=open] #hints{opacity:0;pointer-events:none}
 
   <div class="intro">
     <h1 class="title">Welcome to my office</h1>
-    <div class="intro-cta intro-cta--tight">
+    <p class="hint-line">Click around and see what you find — or use the menu for a quicker way through.</p>
+    <div class="intro-cta">
       <a class="btn btn-go" href="https://calendar.app.google/UVRpSX8X4jy7VhyV8" target="_blank" rel="noreferrer" data-cta="hero-call">Book a free call</a>
     </div>
-    <p class="hint-line">Click around and see what you find — or use the menu for a quicker way through.</p>
     <div class="counter" id="counter">0 of 10 discovered</div>
   </div>
 </div>
