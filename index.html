@@ -348,7 +348,7 @@ const CONTENT = {
 
   travel: head("Where I've been", VISITED.length + ' countries \u00b7 four cities called home') + `
     <div class="travel">
-      <canvas id="globeCanvas" width="860" height="860" aria-label="Globe showing the countries visited"></canvas>
+      <canvas id="globeCanvas" width="560" height="560" aria-label="Globe showing the countries visited"></canvas>
       <div class="tbar"><i style="width:${Math.round(VISITED.length/GOAL*100)}%"></i></div>
       <p class="tnum"><strong>${VISITED.length}</strong> of my ${GOAL}-country goal &nbsp;\u00b7&nbsp; drag the globe to turn it</p>
       <div class="tchips">${VISITED.map(v => '<span class="tchip">'+v[0]+'</span>').join('')}</div>
@@ -599,9 +599,9 @@ chairG.position.set(dx+.4, FLOOR+3.1, 6.4);
 /* laptop (clickable -> work) */
 const laptop = new T.Group(); scene.add(laptop);
 box(5.6,.3,3.6,'#bdb6a7',0,0,0,laptop);
-const kbd = box(4.7,.05,2.05,'#9a9488',0,.18,.46,laptop);
+const kbd = box(4.7,.09,1.62,'#9a9488',0,.21,.18,laptop);
 kbd.material = new T.MeshStandardMaterial({map:keyboardTex(), roughness:.78, metalness:0, envMapIntensity:.25, bumpMap:GRAIN, bumpScale:.01});
-box(1.7,.03,.95,'#a9a296',0,.19,1.42,laptop);            /* trackpad */
+box(1.7,.07,.68,'#a9a296',0,.2,1.4,laptop);              /* trackpad, clear of the keys */
 
 const lid = new T.Group(); laptop.add(lid);
 box(5.6,3.4,.24,'#332e27',0,1.7,0,lid);
@@ -700,8 +700,10 @@ COLS.forEach(c => {
 Object.keys(edges).forEach(k => box(PT, edges[k], bd, CASE2, hx + parseFloat(k), Y(edges[k]/2), 1.8));
 COLS.forEach(c => {
   const w = c.x1 - c.x0, cx = hx + (c.x0 + c.x1)/2;
-  c.ys.forEach(y => box(w + PT, PT, bd, CASE, cx, Y(y), 1.8));
-  box(w, c.top, .24, CASE3, cx, Y(c.top/2), .14).castShadow = false;
+  /* shelves span the gap BETWEEN dividers and sit a hair shallower, so no two
+     surfaces are ever coplanar -- coplanar faces are what made the edges fizz */
+  c.ys.forEach(y => box(w - PT + .05, PT, bd - .09, CASE, cx, Y(y), 1.78));
+  box(w - PT + .05, c.top, .24, CASE3, cx, Y(c.top/2), .12).castShadow = false;
 });
 /* a cubby: where its floor is and how wide it runs */
 const cub = (ci, i) => {
@@ -786,19 +788,27 @@ const hbCurve = new T.CatmullRomCurve3([
 ]);
 add(new T.Mesh(new T.TubeGeometry(hbCurve, 40, .085, 12, false), mat('#2b2b30',.75)), cans);
 [-1,1].forEach(sg => {
-  const cupM = add(new T.Mesh(new T.CylinderGeometry(.44,.44,.3,26), mat('#2b2b30',.72)), cans);
-  cupM.rotation.z = Math.PI/2; cupM.position.set(sg*.7,.46,0);
-  const plate = add(new T.Mesh(new T.CylinderGeometry(.27,.27,.33,22), mat('#8d8d95',.42)), cans);
-  plate.rotation.z = Math.PI/2; plate.position.set(sg*.56,.46,0);
-  const pad = add(new T.Mesh(new T.TorusGeometry(.32,.12,12,22), mat('#1b1b1f',.95)), cans);
-  pad.rotation.y = Math.PI/2; pad.position.set(sg*.88,.46,0);
+  const yoke = add(new T.Mesh(new T.TorusGeometry(.4,.045,8,18,Math.PI), mat('#3a3a42',.6)), cans);
+  yoke.rotation.y = Math.PI/2; yoke.position.set(sg*.6,.5,0);     /* fork onto the cup */
+  const cupM = add(new T.Mesh(new T.CylinderGeometry(.44,.44,.34,26), mat('#2b2b30',.72)), cans);
+  cupM.rotation.z = Math.PI/2; cupM.position.set(sg*.72,.46,0);
+  /* the brushed disc is the OUTER face -- it used to sit inboard and show
+     through the middle of the band as a floating grey circle */
+  const plate = add(new T.Mesh(new T.CylinderGeometry(.3,.3,.3,22), mat('#8d8d95',.42)), cans);
+  plate.rotation.z = Math.PI/2; plate.position.set(sg*.82,.46,0);
+  /* the ear pad faces inwards, towards where a head would be */
+  const pad = add(new T.Mesh(new T.TorusGeometry(.33,.11,12,22), mat('#1b1b1f',.95)), cans);
+  pad.rotation.y = Math.PI/2; pad.position.set(sg*.53,.46,0);
 });
+/* cord: leaves the underside of the near cup and curls onto the shelf, so it
+   reads as attached rather than as a stray black line lying next to them */
 const hpCord = new T.CatmullRomCurve3([
-  new T.Vector3(.86,.4,.1), new T.Vector3(1.3,.12,.5), new T.Vector3(1.0,.08,1.05), new T.Vector3(.4,.08,1.2)
+  new T.Vector3(.72,.22,.12), new T.Vector3(.86,.07,.46), new T.Vector3(.72,.05,.84),
+  new T.Vector3(.34,.05,.92), new T.Vector3(.1,.05,.62), new T.Vector3(.24,.05,.34)
 ]);
-add(new T.Mesh(new T.TubeGeometry(hpCord, 40, .045, 8, false), mat('#2b2b30',.8)), cans).castShadow = false;
-{ const c = cub(2,1); cans.position.set(c.x + 2.0, c.y, 1.9); }
-cans.rotation.y = -.3;
+add(new T.Mesh(new T.TubeGeometry(hpCord, 60, .036, 8, false), mat('#2b2b30',.8)), cans).castShadow = false;
+{ const c = cub(2,1); cans.position.set(c.x + 2.0, c.y, 2.45); }
+cans.rotation.y = -.52;
 
 /* ---- aquarium ---- */
 const tank = new T.Group(); scene.add(tank);
@@ -887,29 +897,40 @@ const spk = new T.Group(); scene.add(spk);
 
 /* ---- trophies and medals, beside the ball ---- */
 const trophies = new T.Group(); scene.add(trophies);
+/* proper metal, otherwise the gold sat at the same value as the yellow shelf
+   behind it and the trophies read as part of the carcass */
+const GOLD = () => new T.MeshStandardMaterial({color:new T.Color('#a97d13'), roughness:.26, metalness:.92, envMapIntensity:.72});
+const GOLD2 = () => new T.MeshStandardMaterial({color:new T.Color('#7a5a0d'), roughness:.34, metalness:.92, envMapIntensity:.62});
 const trophy = (tx, sc) => {
   const g = new T.Group(); trophies.add(g);
-  box(.66,.22,.66,'#3a2f25',0,.11,0,g);
-  box(.5,.1,.5,'#4a3c2e',0,.26,0,g);
-  cyl(.1,.1,.36,'#c9a227',0,.49,0,12,g);
-  const bowl = add(new T.Mesh(new T.CylinderGeometry(.35,.18,.52,18), mat('#c9a227',.35)), g);
+  box(.66,.22,.66,'#2e251c',0,.11,0,g);
+  box(.5,.1,.5,'#3d3124',0,.26,0,g);
+  add(new T.Mesh(new T.CylinderGeometry(.1,.1,.36,14), GOLD2()), g).position.y = .49;
+  const bowl = add(new T.Mesh(new T.CylinderGeometry(.35,.18,.52,20), GOLD()), g);
   bowl.position.y = .93;
+  add(new T.Mesh(new T.TorusGeometry(.33,.045,8,22), GOLD()), g).position.y = 1.18;  /* lip */
   [-1,1].forEach(sg => {
-    const hd = add(new T.Mesh(new T.TorusGeometry(.13,.035,8,14,Math.PI), mat('#c9a227',.35)), g);
+    const hd = add(new T.Mesh(new T.TorusGeometry(.13,.035,8,14,Math.PI), GOLD()), g);
     hd.position.set(sg*.41,.94,0); hd.rotation.z = sg > 0 ? -Math.PI/2 : Math.PI/2;
   });
   g.position.x = tx; g.scale.setScalar(sc);
 };
 trophy(-.34, 1.85); trophy(.72, 1.3);
 { const c = cub(2,0); trophies.position.set(c.x + 1.1, c.y, 1.7); }
+/* the medals used to hang from nothing -- two ribbons floating in mid air.
+   They hang off a little stand now, which is also what makes them read. */
 const medals = new T.Group(); scene.add(medals);
-[0,1].forEach(i => {
-  box(.22,1.0,.06, i ? '#2f5d72' : '#9c3b33', i*.52, 2.5, 0, medals);
-  const md = cyl(.32,.32,.07,'#c9a227', i*.52, 1.8, .04, 20, medals);
-  md.rotation.x = Math.PI/2;
-  cyl(.2,.2,.08,'#b08d1c', i*.52, 1.8, .05, 18, medals).rotation.x = Math.PI/2;
+box(1.5,.14,.5,'#2e251c',0,.07,0,medals);
+[-1,1].forEach(sg => cyl(.05,.05,3.4,'#6b5334', sg*.72,1.77,0,10,medals));
+const xbar = cyl(.05,.05,1.6,'#6b5334',0,3.48,0,10,medals); xbar.rotation.z = Math.PI/2;
+[-1,1].forEach(sg => {
+  box(.2,1.15,.05, sg > 0 ? '#2f5d72' : '#9c3b33', sg*.34, 2.92, .07, medals);
+  const md = add(new T.Mesh(new T.CylinderGeometry(.3,.3,.07,22), GOLD()), medals);
+  md.rotation.x = Math.PI/2; md.position.set(sg*.34, 2.1, .1);
+  const rim = add(new T.Mesh(new T.TorusGeometry(.3,.04,8,22), GOLD2()), medals);
+  rim.position.set(sg*.34, 2.1, .1);
 });
-{ const c = cub(2,0); medals.position.set(c.x + 1.95, c.y, .45); }
+{ const c = cub(2,0); medals.position.set(c.x + 1.95, c.y, .72); }
 
 /* basketball (clickable -> about).
    two perpendicular great circles -- the equator and one running pole to pole --
@@ -971,7 +992,7 @@ const ballMesh = add(new T.Mesh(new T.SphereGeometry(1.2, 64, 48),
 { const c = cub(2,0); ball.position.set(c.x - 1.75, c.y + 1.2, 2.1); }
 ball.rotation.set(.16, .35, .1);
 
-/* a formula one car beside the ball: together they are "beyond work" */
+/* a formula one car beside the ball -- scenery, not clickable */
 const car = new T.Group(); scene.add(car);
 const RED = '#bc1226', RED2 = '#8e0c1c', CARB = '#24242a', TYRE = '#17171a';
 link([0,.34,-1.45], [0,.36,.55], .27, RED, car);          /* monocoque */
@@ -1002,7 +1023,9 @@ wheel(-.92,1.02); wheel(.92,1.02); wheel(-.96,-1.08); wheel(.96,-1.08);
 { const c = cub(0,2); car.position.set(c.x - .55, c.y, 2.0); }
 car.rotation.y = -.6; car.scale.setScalar(.8);
 
-function earthTexture(){
+let _earthC = null, _earthD = null;
+function earthCanvas(){
+  if (_earthC) return _earthC;
   const W = 2048, H = 1024;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
@@ -1030,9 +1053,20 @@ function earthTexture(){
     g.fillStyle = `rgba(0,0,0,${Math.random()*.05})`;
     g.fillRect(x,y,2,2);
   }
-  const t = new T.CanvasTexture(c);
+  _earthC = c;
+  return c;
+}
+function earthTexture(){
+  const t = new T.CanvasTexture(earthCanvas());
   t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8;
   return t;
+}
+function earthData(){
+  if (!_earthD){
+    const c = earthCanvas();
+    _earthD = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+  }
+  return _earthD;
 }
 
 function ticketTex(){
@@ -1290,9 +1324,10 @@ box(.1,.7,.08,'#8a3b32',.22,.1,.2,clock).rotation.z = -1.1;
 clock.position.set(.9, 11.6, -4.2);
 
 /* ---------- clickable objects ---------- */
-/* the ball and the car are one thing to click: the stuff outside work */
+/* the ball and the trophies are the one thing to click: the stuff outside work.
+   The F1 car stays scenery -- no link on it for now. */
 const beyondGroup = new T.Group(); scene.add(beyondGroup);
-beyondGroup.add(ball); beyondGroup.add(car);
+beyondGroup.add(ball);
 beyondGroup.add(trophies); beyondGroup.add(medals);
 
 const TARGETS = [
@@ -1516,56 +1551,77 @@ let lastFocus = null;
 /* orthographic globe with a pin per country, drawn from the same coastlines */
 let gLon = -25, gLat = 22;
 function drawGlobe(cv){
+  /* Rendered per pixel by inverting the orthographic projection and sampling the
+     equirectangular earth bitmap. Filling only the *visible* points of each
+     coastline -- what this used to do -- cuts a straight chord across any shape
+     that crosses the horizon, which is what tore the map up when you rotated it. */
   const g = cv.getContext('2d'), W = cv.width, H = cv.height;
-  const R = W*0.41, cx = W/2, cy = H/2, rad = Math.PI/180;
+  const R = W*.44, cx = W/2, cy = H/2, rad = Math.PI/180;
+  const src = earthData(), SW = src.width, SH = src.height, sd = src.data;
+  const out = g.createImageData(W, H), od = out.data;
   const s0 = Math.sin(gLat*rad), c0 = Math.cos(gLat*rad);
-  const proj = (lon,lat) => {
+  const lx = -.40, ly = .44, lz = .80;      /* key light, upper left, towards us */
+  for (let py = 0; py < H; py++){
+    const ny = (cy - py + .5)/R, ny2 = ny*ny;
+    for (let px = 0; px < W; px++){
+      const i = (py*W + px) << 2;
+      const nx = (px - cx + .5)/R;
+      const rho2 = nx*nx + ny2;
+      if (rho2 > 1){ od[i+3] = 0; continue; }
+      const nz = Math.sqrt(1 - rho2);
+      const sinLat = nz*s0 + ny*c0;
+      const lat = Math.asin(sinLat > 1 ? 1 : sinLat < -1 ? -1 : sinLat)/rad;
+      let lon = gLon + Math.atan2(nx, nz*c0 - ny*s0)/rad;
+      lon = ((lon + 180) % 360 + 360) % 360 - 180;
+      let u = ((lon + 180)/360*SW) | 0; if (u < 0) u = 0; else if (u >= SW) u = SW - 1;
+      let v = ((90 - lat)/180*SH) | 0;  if (v < 0) v = 0; else if (v >= SH) v = SH - 1;
+      const si = (v*SW + u) << 2;
+      let d = nx*lx + ny*ly + nz*lz;
+      let k = .36 + .82*(d > 0 ? d : 0);
+      if (rho2 > .80) k *= 1 - (rho2 - .80)/.20*.52;       /* terminator / rim falloff */
+      const r = sd[si]*k, gg = sd[si+1]*k, bb = sd[si+2]*k;
+      od[i]   = r  > 255 ? 255 : r;
+      od[i+1] = gg > 255 ? 255 : gg;
+      od[i+2] = bb > 255 ? 255 : bb;
+      od[i+3] = 255;
+    }
+  }
+  g.clearRect(0, 0, W, H);
+  g.putImageData(out, 0, 0);
+  /* a soft specular highlight so it reads as a sphere, not a sticker */
+  g.save();
+  g.beginPath(); g.arc(cx, cy, R, 0, 6.3); g.clip();
+  const hl = g.createRadialGradient(cx - R*.36, cy - R*.40, 0, cx - R*.36, cy - R*.40, R*.95);
+  hl.addColorStop(0, 'rgba(255,255,255,.18)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = hl; g.fillRect(cx-R, cy-R, R*2, R*2);
+  g.restore();
+  /* pins, drawn as vectors on top */
+  const proj = (lon, lat) => {
     const la = lat*rad, dl = (lon-gLon)*rad, cl = Math.cos(la);
     const cosc = s0*Math.sin(la) + c0*cl*Math.cos(dl);
-    if (cosc < 0) return null;
+    if (cosc < .05) return null;
     return [cx + R*cl*Math.sin(dl), cy - R*(c0*Math.sin(la) - s0*cl*Math.cos(dl)), cosc];
   };
-  g.clearRect(0,0,W,H);
-  const oc = g.createRadialGradient(cx-R*.32, cy-R*.38, R*.08, cx, cy, R);
-  oc.addColorStop(0,'#3277a4'); oc.addColorStop(.72,'#1d4d70'); oc.addColorStop(1,'#12304a');
-  g.beginPath(); g.arc(cx,cy,R,0,6.3); g.fillStyle = oc; g.fill();
-  g.save(); g.beginPath(); g.arc(cx,cy,R,0,6.3); g.clip();
-  g.strokeStyle = 'rgba(255,255,255,.13)'; g.lineWidth = 1;
-  const line = (fn) => { g.beginPath(); let on = false;
-    for (const q of fn()) { if (!q) { on = false; continue; } on ? g.lineTo(q[0],q[1]) : g.moveTo(q[0],q[1]); on = true; }
-    g.stroke(); };
-  for (let lon=-180; lon<180; lon+=30) line(function*(){ for (let lat=-90;lat<=90;lat+=3) yield proj(lon,lat); });
-  for (let lat=-60; lat<=60; lat+=30) line(function*(){ for (let lon=-180;lon<=180;lon+=3) yield proj(lon,lat); });
-  g.fillStyle = '#7da35e'; g.strokeStyle = '#5f8445'; g.lineWidth = 1.5; g.lineJoin = 'round';
-  for (const r of LAND){
-    const pts = [];
-    for (let i=0;i<r.length;i+=2){ const q = proj(r[i], r[i+1]); if (q) pts.push(q); }
-    if (pts.length < 3) continue;
-    g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
-    for (let i=1;i<pts.length;i++) g.lineTo(pts[i][0], pts[i][1]);
-    g.closePath(); g.fill(); g.stroke();
-  }
-  g.restore();
-  const rim = g.createRadialGradient(cx,cy,R*.62,cx,cy,R);
-  rim.addColorStop(0,'rgba(0,0,0,0)'); rim.addColorStop(1,'rgba(0,0,0,.5)');
-  g.beginPath(); g.arc(cx,cy,R,0,6.3); g.fillStyle = rim; g.fill();
-  for (const [name,lat,lon] of VISITED){
-    const q = proj(lon,lat); if (!q) continue;
-    const k = 1 + .14*q[2];
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  for (const [name, lat, lon] of VISITED){
+    const q = proj(lon, lat); if (!q) continue;
+    const k = 1 + .13*q[2];
     const hX = cx + (q[0]-cx)*k, hY = cy + (q[1]-cy)*k - R*.07;
-    g.strokeStyle = '#efe4cf'; g.lineWidth = Math.max(1.6, R*.008);
-    g.beginPath(); g.moveTo(q[0],q[1]); g.lineTo(hX,hY); g.stroke();
-    g.beginPath(); g.arc(hX,hY,R*.027,0,6.3);
+    g.globalAlpha = Math.min(1, q[2]*4);
+    g.strokeStyle = '#efe4cf'; g.lineWidth = Math.max(1.4, R*.008);
+    g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(hX, hY); g.stroke();
+    g.beginPath(); g.arc(hX, hY, Math.max(2.4, R*.026), 0, 6.3);
     g.fillStyle = '#e4603a'; g.fill();
     g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = 1; g.stroke();
   }
+  g.globalAlpha = 1;
 }
 function initGlobe(){
   const cv = document.getElementById('globeCanvas');
   if (!cv) return;
   drawGlobe(cv);
   let from = null, l0 = 0, t0 = 0;
-  cv.addEventListener('pointerdown', e => { from = [e.clientX, e.clientY]; l0 = gLon; t0 = gLat; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointerdown', e => { from = [e.clientX, e.clientY]; l0 = gLon; t0 = gLat; try { cv.setPointerCapture(e.pointerId); } catch(err){} });
   cv.addEventListener('pointermove', e => {
     if (!from) return;
     gLon = l0 - (e.clientX - from[0]) * .35;
