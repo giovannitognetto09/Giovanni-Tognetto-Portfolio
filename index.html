@@ -278,6 +278,10 @@ window.addEventListener('error', function(e){
 import * as T from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 /* real world coastlines (Natural Earth 110m, simplified): used both for the
    globe on the shelf and for the map in the "Where I've been" panel */
@@ -456,7 +460,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
 renderer.toneMapping = T.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.22;
+renderer.toneMappingExposure = 1.16;
 host.appendChild(renderer.domElement);
 
 /* matte materials: high roughness, no metalness -> no plastic sheen */
@@ -474,6 +478,59 @@ function grainTex(px = 512, n = 26000, a = .09){
   }
   const t = new T.CanvasTexture(c);
   t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(3,3);
+  t.__canvas = c;
+  return t;
+}
+/* A bump map only fakes relief at the shading stage. A real tangent-space
+   normal map, derived from the same grain by a Sobel pass, makes the highlight
+   actually crawl across the surface -- which is most of the difference between
+   "moulded out of clay" and "a thing made of a material". */
+function normalFrom(srcCanvas, strength = 2.6){
+  const px = srcCanvas.width;
+  const sd = srcCanvas.getContext('2d').getImageData(0,0,px,px).data;
+  const c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d');
+  const out = g.createImageData(px,px), od = out.data;
+  const L = (x,y) => sd[(((y+px)%px)*px + ((x+px)%px))*4]/255;
+  for (let y=0;y<px;y++) for (let x=0;x<px;x++){
+    const dx = (L(x-1,y-1)+2*L(x-1,y)+L(x-1,y+1)) - (L(x+1,y-1)+2*L(x+1,y)+L(x+1,y+1));
+    const dy = (L(x-1,y-1)+2*L(x,y-1)+L(x+1,y-1)) - (L(x-1,y+1)+2*L(x,y+1)+L(x+1,y+1));
+    let nx = dx*strength, ny = dy*strength, nz = 1;
+    const len = Math.hypot(nx,ny,nz);
+    const i = (y*px+x)<<2;
+    od[i]   = (nx/len*.5+.5)*255;
+    od[i+1] = (ny/len*.5+.5)*255;
+    od[i+2] = (nz/len*.5+.5)*255;
+    od[i+3] = 255;
+  }
+  g.putImageData(out,0,0);
+  const t = new T.CanvasTexture(c);
+  t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(3,3);
+  return t;
+}
+/* Low-frequency mottle used as a roughness map. A single roughness value over a
+   whole object is the other half of the plastic look: nothing in a real room is
+   uniformly matte, so the highlight has nowhere to catch. */
+function roughTex(px = 256){
+  const c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d');
+  g.fillStyle = '#d8d8d8'; g.fillRect(0,0,px,px);
+  for (let i=0;i<220;i++){
+    const x = Math.random()*px, y = Math.random()*px, r = 10 + Math.random()*46;
+    const v = Math.random()*.5 + .5;
+    const rg = g.createRadialGradient(x,y,0,x,y,r);
+    rg.addColorStop(0, `rgba(255,255,255,${(.22*v).toFixed(3)})`);
+    rg.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = rg; g.beginPath(); g.arc(x,y,r,0,6.3); g.fill();
+  }
+  for (let i=0;i<180;i++){
+    const x = Math.random()*px, y = Math.random()*px, r = 8 + Math.random()*38;
+    const rg = g.createRadialGradient(x,y,0,x,y,r);
+    rg.addColorStop(0,'rgba(0,0,0,.2)'); rg.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle = rg; g.beginPath(); g.arc(x,y,r,0,6.3); g.fill();
+  }
+  const t = new T.CanvasTexture(c);
+  t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(2.4,2.4);
   return t;
 }
 /* wood: the desk, floor and chair carry a grain rather than a flat brown */
@@ -538,14 +595,19 @@ function keyboardTex(){
   const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8;
   return t;
 }
+const NRM = normalFrom(GRAIN.__canvas, 2.4);
+const ROUGH = roughTex();
+/* roughness now varies across every surface, the environment actually shows up
+   in it, and a hint of metalness gives the fresnel a real surface has */
 const mat = (c, r = .95) => new T.MeshStandardMaterial({
-  color:new T.Color(c), roughness:r, metalness:0, envMapIntensity:.28,
-  bumpMap:GRAIN, bumpScale:.016
+  color:new T.Color(c), roughness:r, metalness:.04, envMapIntensity:.42,
+  roughnessMap:ROUGH, normalMap:NRM, normalScale:new T.Vector2(.24,.24)
 });
 const wood = (c, rep = 2) => {
   const w = WOOD.clone(); w.needsUpdate = true; w.repeat.set(rep,rep);
-  return new T.MeshStandardMaterial({color:new T.Color(c), map:w, roughness:.88, metalness:0,
-    envMapIntensity:.28, bumpMap:w, bumpScale:.03});
+  const n = NRM.clone(); n.needsUpdate = true; n.repeat.set(rep*1.6, rep*1.6);
+  return new T.MeshStandardMaterial({color:new T.Color(c), map:w, roughness:.8, metalness:.04,
+    envMapIntensity:.44, roughnessMap:w, normalMap:n, normalScale:new T.Vector2(.3,.3)});
 };
 const add = (o, parent) => { o.castShadow = true; o.receiveShadow = true; (parent||scene).add(o); return o; };
 const place = (m,x,y,z,p) => { m.position.set(x,y,z); return add(m,p); };
@@ -553,8 +615,8 @@ const box = (w,h,d,c,x,y,z,p) => {
   /* a small bevel on every edge: the single biggest difference between
      "built in code" and "designed" -- real objects have no razor edges */
   w = Math.abs(w); h = Math.abs(h); d = Math.abs(d);
-  const r = Math.min(.085, Math.min(w,h,d) * .4);
-  return place(new T.Mesh(new RoundedBoxGeometry(w,h,d,2,r), mat(c)), x,y,z,p);
+  const r = Math.min(.14, Math.min(w,h,d) * .42);
+  return place(new T.Mesh(new RoundedBoxGeometry(w,h,d,3,r), mat(c)), x,y,z,p);
 };
 const cyl = (rt,rb,h,c,x,y,z,s=24,p) => place(new T.Mesh(new T.CylinderGeometry(rt,rb,h,s), mat(c)), x,y,z,p);
 const sph = (r,c,x,y,z,p) => place(new T.Mesh(new T.SphereGeometry(r,32,24), mat(c)), x,y,z,p);
@@ -577,7 +639,7 @@ function sweptBody(spine, keys, segs = 90, radial = 22){
     }
     return [keys[keys.length-1][1], keys[keys.length-1][2]];
   };
-  const pos = [], idx = [];
+  const pos = [], idx = [], uv = [];
   const up = new T.Vector3(0,1,0), N = new T.Vector3(), B = new T.Vector3(), Tn = new T.Vector3();
   for (let i=0;i<=segs;i++){
     const t = i/segs;
@@ -590,6 +652,7 @@ function sweptBody(spine, keys, segs = 90, radial = 22){
       const a = (j/radial)*Math.PI*2;
       const cx = Math.cos(a)*rx, cy = Math.sin(a)*ry;
       pos.push(P.x + B.x*cx + N.x*cy, P.y + B.y*cx + N.y*cy, P.z + B.z*cx + N.z*cy);
+      uv.push(j/radial, t);      /* without these the coat map has nothing to sit on */
     }
   }
   for (let i=0;i<segs;i++) for (let j=0;j<radial;j++){
@@ -598,6 +661,7 @@ function sweptBody(spine, keys, segs = 90, radial = 22){
   }
   const g = new T.BufferGeometry();
   g.setAttribute('position', new T.Float32BufferAttribute(pos,3));
+  g.setAttribute('uv', new T.Float32BufferAttribute(uv,2));
   g.setIndex(idx); g.computeVertexNormals();
   return g;
 }
@@ -613,24 +677,59 @@ const link = (a, b, r, c, p, m) => {
 /* room */
 const FLOOR = -5.2;
 const wall = box(80,34,1,'#55493c',0,12,-5); wall.castShadow = false;
+{
+  /* painted plaster: a faint large-scale mottle, fine relief, and a little
+     more light near the floor, so the back wall is not one flat fill */
+  const px = 512, c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f2f2f2'; g.fillRect(0,0,px,px);
+  /* every blob is drawn nine times, once per wrap offset, so the texture tiles
+     without a seam -- drawn once it showed up as a grid of squares on the wall */
+  for (let i=0;i<260;i++){
+    const bx = Math.random()*px, by = Math.random()*px, r = 24 + Math.random()*86;
+    const up = Math.random() < .5;
+    for (let ox=-1; ox<=1; ox++) for (let oy=-1; oy<=1; oy++){
+      const x = bx + ox*px, y = by + oy*px;
+      if (x < -r || x > px+r || y < -r || y > px+r) continue;
+      const rg = g.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0, up ? 'rgba(255,255,255,.018)' : 'rgba(74,58,42,.018)');
+      rg.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = rg; g.beginPath(); g.arc(x,y,r,0,6.3); g.fill();
+    }
+  }
+  const plaster = new T.CanvasTexture(c);
+  plaster.colorSpace = T.SRGBColorSpace;
+  plaster.wrapS = plaster.wrapT = T.RepeatWrapping; plaster.repeat.set(7,3);
+  const wn = NRM.clone(); wn.needsUpdate = true; wn.repeat.set(26,11);
+  const wr = ROUGH.clone(); wr.needsUpdate = true; wr.repeat.set(9,4);
+  wall.material = new T.MeshStandardMaterial({
+    color:new T.Color('#6b5c4c'), map:plaster, roughness:.96, metalness:0,
+    envMapIntensity:.26, roughnessMap:wr, normalMap:wn, normalScale:new T.Vector2(.16,.16)
+  });
+}
 const floor = box(80,1,26,'#3a3029',0,FLOOR-.5,7); floor.castShadow = false;
 floor.material = wood('#5e4a38',9);
+const skirt = box(80,.9,.34,'#8d7d69',0,FLOOR+.45,-4.33); skirt.castShadow = false;
+const skirtTop = box(80,.16,.46,'#9a8a74',0,FLOOR+.92,-4.28); skirtTop.castShadow = false;
 const rug = cyl(7.4,7.4,.12,'#7a4f45',-5.6,FLOOR+.06,4.2,44); rug.castShadow = false;
 rug.scale.set(1,1,.72);
 
 /* light */
 const pmrem = new T.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), .04).texture;
-scene.add(new T.HemisphereLight(0xfff0dc, 0x6a5742, 1.2));
-scene.add(new T.AmbientLight(0xffe9d0, .1));
-const key = new T.DirectionalLight(0xffe8c8, 1.72);
+/* the old rig was mostly ambient, which is why everything looked moulded out
+   of one lump: flat fill erases the shading gradient that describes a shape */
+scene.add(new T.HemisphereLight(0xfff0dc, 0x6a5742, 1.0));
+scene.add(new T.AmbientLight(0xffe9d0, .07));
+const key = new T.DirectionalLight(0xffe8c8, 2.0);
 key.position.set(-9,21,27); key.castShadow = true;
-key.shadow.mapSize.set(2048,2048); key.shadow.bias = -.0005; key.shadow.normalBias = .02; key.shadow.radius = 8;
+key.shadow.mapSize.set(3072,3072); key.shadow.bias = -.00035; key.shadow.normalBias = .018; key.shadow.radius = 3.2;
 Object.assign(key.shadow.camera,{left:-28,right:28,top:24,bottom:-18,near:1,far:70});
 scene.add(key);
-const fill = new T.DirectionalLight(0xd8c0a0, .7); fill.position.set(16,8,14); scene.add(fill);
-const warmL = new T.PointLight(0xffd49a, 90, 34, 2); warmL.position.set(-8,6,7); scene.add(warmL);
-const warmR = new T.PointLight(0xffd9a8, 70, 30, 2); warmR.position.set(9,6,8); scene.add(warmR);
+const fill = new T.DirectionalLight(0xd8c0a0, .34); fill.position.set(16,8,14); scene.add(fill);
+const rimL = new T.DirectionalLight(0xbcd2ff, .38); rimL.position.set(14,10,-12); scene.add(rimL);
+const warmL = new T.PointLight(0xffd49a, 52, 34, 2); warmL.position.set(-8,6,7); scene.add(warmL);
+const warmR = new T.PointLight(0xffd9a8, 40, 30, 2); warmR.position.set(9,6,8); scene.add(warmR);
 
 const CONTACT = (() => {
   const c = document.createElement('canvas'); c.width = c.height = 256;
@@ -675,7 +774,9 @@ box(1.7,.07,.68,'#a9a296',0,.2,1.4,laptop);              /* trackpad, clear of t
 
 const lid = new T.Group(); laptop.add(lid);
 box(5.6,3.4,.24,'#332e27',0,1.7,0,lid);
-box(5.05,2.9,.06,'#15120e',0,1.72,.15,lid);
+const scr = box(5.05,2.9,.06,'#15120e',0,1.72,.15,lid);
+scr.material = new T.MeshStandardMaterial({color:new T.Color('#15120e'), roughness:.14,
+  metalness:.16, envMapIntensity:.42});
 [['#c74a38',.6,-1.7],['#e8c35a',1.15,-.8],['#5fa87d',1.75,.1],['#8a78e0',2.4,1],['#d98a3a',1.3,1.85]]
   .forEach(([c,h,x]) => box(.5,h,.04,c,x,.72+h/2,.19,lid));
 lid.position.set(0,.14,-1.72); lid.rotation.x = -.2;
@@ -761,7 +862,8 @@ const COLS = [
   {x0: 0.8, x1: 6.8, top:15.5, ys:[0, 4.4, 8.4, 12.0, 15.5]}
 ];
 const Y = v => FLOOR + v;
-const CASE = '#dcb44e', CASE2 = '#c9a033', CASE3 = '#a37f1e';
+/* a shade less saturated than before: painted MDF, not a block of plasticine */
+const CASE = '#d4b161', CASE2 = '#bda052', CASE3 = '#9c8140';
 const edges = {};
 COLS.forEach(c => {
   edges[c.x0] = Math.max(edges[c.x0] || 0, c.top);
@@ -1427,16 +1529,74 @@ wboard.position.set(-18.5, 7.4, WALLZ);
    tail-to-skull is one swept surface, so the back line is unbroken. */
 const dog = new T.Group(); scene.add(dog);
 const FUR = '#b56a38', FUR2 = '#c88152', FUR3 = '#99521f', DARK = '#45271a';
-const oval = (r,c,x,y,z,sx,sy,sz) => { const m = sph(r,c,x,y,z,dog); m.scale.set(sx,sy,sz); return m; };
+
+/* Nove was the last thing in the room still reading as modelling clay, because
+   a dog is the one object where a perfectly smooth surface is obviously wrong.
+   Three things fix it: short directional strokes in a normal map (a vizsla's
+   coat is very short, so stipple is accurate), a mottled colour so the hide is
+   not one flat tone, and sheen -- the soft wrap-around rim that fur has and
+   plastic does not. */
+const furMaps = (() => {
+  const px = 512;
+  const nc = document.createElement('canvas'); nc.width = nc.height = px;
+  const ng = nc.getContext('2d');
+  ng.fillStyle = '#808080'; ng.fillRect(0,0,px,px);
+  ng.lineCap = 'round';
+  for (let i=0;i<9000;i++){
+    const x = Math.random()*px, y = Math.random()*px;
+    const a = -1.35 + (Math.random()-.5)*.55, len = 3 + Math.random()*6;
+    const light = Math.random() < .5;
+    ng.strokeStyle = light ? 'rgba(255,255,255,.22)' : 'rgba(0,0,0,.22)';
+    ng.lineWidth = .6 + Math.random()*1.1;
+    ng.beginPath(); ng.moveTo(x,y);
+    ng.lineTo(x + Math.cos(a)*len, y + Math.sin(a)*len); ng.stroke();
+  }
+  const cc = document.createElement('canvas'); cc.width = cc.height = px;
+  const cg = cc.getContext('2d');
+  cg.fillStyle = '#ffffff'; cg.fillRect(0,0,px,px);
+  for (let i=0;i<260;i++){
+    const bx = Math.random()*px, by = Math.random()*px, r = 16 + Math.random()*62;
+    const up = Math.random() < .5;
+    for (let ox=-1;ox<=1;ox++) for (let oy=-1;oy<=1;oy++){
+      const x = bx+ox*px, y = by+oy*px;
+      if (x < -r || x > px+r || y < -r || y > px+r) continue;
+      const rg = cg.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0, up ? 'rgba(255,230,200,.1)' : 'rgba(120,62,24,.12)');
+      rg.addColorStop(1, 'rgba(255,255,255,0)');
+      cg.fillStyle = rg; cg.beginPath(); cg.arc(x,y,r,0,6.3); cg.fill();
+    }
+  }
+  const tint = new T.CanvasTexture(cc);
+  tint.colorSpace = T.SRGBColorSpace;
+  tint.wrapS = tint.wrapT = T.RepeatWrapping; tint.repeat.set(2.2,2.2);
+  return { n: normalFrom(nc, 1.5), tint };
+})();
+const furMat = (c, rep = 3.4) => {
+  const n = furMaps.n.clone(); n.needsUpdate = true; n.repeat.set(rep,rep);
+  const t = furMaps.tint.clone(); t.needsUpdate = true; t.repeat.set(rep*.6, rep*.6);
+  return new T.MeshPhysicalMaterial({
+    color:new T.Color(c), map:t, roughness:.92, metalness:0, envMapIntensity:.3,
+    normalMap:n, normalScale:new T.Vector2(.85,.85),
+    sheen:.7, sheenRoughness:.85, sheenColor:new T.Color('#ffd9b0')
+  });
+};
+const FURM = furMat(FUR), FURM2 = furMat(FUR2, 4.4);
+const WETM = new T.MeshStandardMaterial({color:new T.Color(DARK), roughness:.16, metalness:.05, envMapIntensity:.7});
+const oval = (r,c,x,y,z,sx,sy,sz) => {
+  const m = sph(r,c,x,y,z,dog); m.scale.set(sx,sy,sz);
+  if (c === FUR) m.material = FURM; else if (c === FUR2 || c === FUR3) m.material = FURM2;
+  else if (c === DARK) m.material = WETM;      /* a nose is wet, not matte */
+  return m;
+};
 
 const dogBody = add(new T.Mesh(sweptBody(
   [[0,.66,-2.05],[0,.84,-1.4],[0,.82,-.62],[0,.88,.16],[0,.98,.8],[0,1.42,1.16],[0,1.9,1.42],[0,2.06,1.58]],
   [[0,.12,.12],[.14,.54,.56],[.34,.45,.52],[.56,.50,.58],[.70,.47,.55],[.82,.30,.33],[.93,.30,.31],[1,.26,.26]]
-), mat(FUR)), dog);
+), FURM), dog);
 
 oval(.39,FUR,  0,2.02,1.64, .97,.86,1.2);                     /* skull: flatter, longer */
 oval(.27,FUR,  0,1.92,1.86, .92,.8,.95);                      /* stop */
-link([0,1.9,1.88], [0,1.81,2.32], .2, FUR2, dog);             /* muzzle */
+link([0,1.9,1.88], [0,1.81,2.32], .2, FUR2, dog, FURM2);             /* muzzle */
 oval(.145,DARK, 0,1.8,2.43, 1.12,.88,.82);                    /* nose */
 oval(.085,FUR2, 0,1.69,2.18, 1.1,.55,1.5);                    /* chin */
 
@@ -1542,7 +1702,7 @@ function frameCamera(){
   document.body.setAttribute('data-pannable', (panMax - panMin > .5) ? 'true' : 'false');
 }
 frameCamera();
-addEventListener('resize', frameCamera);
+addEventListener('resize', () => { frameCamera(); if (composer) composer.setSize(innerWidth, innerHeight); });
 
 /* ---------- hover + click via raycasting (always aligned) ---------- */
 const chip = document.getElementById('chip');
@@ -1624,6 +1784,7 @@ function placeChip(){
 
 /* dev hook: only on #dev, used to verify hit-testing after changes */
 if (location.hash === '#dev') window.__dev = {
+  aoOn(){ return !!composer; },
   TARGETS, camera, renderer,
   pickAt(x,y){ const h = pick({clientX:x, clientY:y}); return h ? h.id : null; },
   panRange(){ return [panMin, panMax]; },
@@ -1640,7 +1801,7 @@ if (location.hash === '#dev') window.__dev = {
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let t0 = performance.now();
 function loop(now){
-  requestAnimationFrame(loop);
+
   const dt = Math.min((now - t0)/1000, .05); t0 = now;
 
   if (!reduce) {
@@ -1674,7 +1835,44 @@ function loop(now){
     }
   }
   placeChip();
-  renderer.render(scene, camera);
+  if (composer) composer.render(); else renderer.render(scene, camera);
+  /* If this machine cannot hold a decent frame rate with occlusion on, drop it
+     rather than hand someone a slideshow. Judged over the first few seconds. */
+  if (composer && aoProbe.n >= 0){
+    aoProbe.n++;
+    if (aoProbe.n === 1) aoProbe.t0 = now;
+    else if (aoProbe.n === 90){
+      const avg = (now - aoProbe.t0) / 89;
+      if (avg > 30){ composer = null; }
+      aoProbe.n = -1;
+    }
+  }
+  requestAnimationFrame(loop);
+}
+/* ---------- ambient occlusion ----------
+ The single biggest reason a render reads as clay is that nothing darkens
+ where two surfaces meet. GTAO computes that contact darkening per pixel.
+ It costs a full extra g-buffer, so phones keep the plain path. */
+let composer = null, gtao = null;
+const aoProbe = { n: 0, t0: 0 };
+const AO_OK = !matchMedia('(hover: none)').matches && innerWidth >= 900;
+if (AO_OK) {
+try {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  gtao = new GTAOPass(scene, camera, innerWidth, innerHeight);
+  gtao.output = GTAOPass.OUTPUT.Default;
+  gtao.blendIntensity = .92;
+  gtao.updateGtaoMaterial({
+    radius: .62, distanceExponent: 1.1, thickness: 1.4,
+    scale: 1.05, samples: 12, distanceFallOff: 1, screenSpaceRadius: false
+  });
+  gtao.updatePdMaterial({ lumaPhi: 9, depthPhi: 2.2, normalPhi: 3.2, radius: 3.4, rings: 2, samples: 16 });
+  composer.addPass(gtao);
+  composer.addPass(new OutputPass());
+  composer.setPixelRatio(Math.min(devicePixelRatio, 1.5));   /* AO is the expensive pass; it does not need full retina */
+  composer.setSize(innerWidth, innerHeight);
+} catch (e) { composer = null; }
 }
 requestAnimationFrame(loop);
 document.getElementById('loading').remove();
