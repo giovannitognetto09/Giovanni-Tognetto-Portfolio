@@ -1604,15 +1604,15 @@ const dogBody = add(new T.Mesh(sweptBody(
 
 oval(.39,FUR,  0,2.02,1.64, .97,.86,1.2);                     /* skull: flatter, longer */
 oval(.27,FUR,  0,1.92,1.86, .92,.8,.95);                      /* stop */
-link([0,1.9,1.88], [0,1.81,2.32], .2, FUR2, dog, FURM2);             /* muzzle */
-oval(.145,DARK, 0,1.8,2.43, 1.12,.88,.82);                    /* nose */
+link([0,1.9,1.88], [0,1.828,2.232], .2, FUR2, dog, FURM2);   /* muzzle: 20% shorter */
+oval(.145,DARK, 0,1.818,2.342, 1.12,.88,.82);                 /* nose */
 /* lower jaw on a hinge: shut, it hides inside the muzzle with just the chin
    showing; open, it drops clear and shows the tongue */
 const jaw = new T.Group(); jaw.position.set(0,1.75,1.98); dog.add(jaw);
-link([0,0,0], [0,-.06,.33], .1, FUR2, jaw, FURM2);
-{ const tg = sph(.085,'#d9727a',0,.045,.2,jaw); tg.scale.set(.95,.3,1.7);
+link([0,0,0], [0,-.048,.25], .1, FUR2, jaw, FURM2);
+{ const tg = sph(.085,'#d9727a',0,.038,.16,jaw); tg.scale.set(.95,.3,1.45);
   tg.material = new T.MeshStandardMaterial({color:new T.Color('#d9727a'), roughness:.35, envMapIntensity:.5}); }
-{ const mouthDark = sph(.12,'#2a1310',0,1.7,2.12,dog); mouthDark.scale.set(1.1,.5,1.6); }
+{ const mouthDark = sph(.12,'#2a1310',0,1.705,2.07,dog); mouthDark.scale.set(1.1,.5,1.45); }
 
 [-1,1].forEach(sg => {
   oval(.52,FUR, sg*.5,.66,-1.1, .44,.92,1.15);                /* thigh, proud of the body */
@@ -1623,9 +1623,13 @@ link([0,0,0], [0,-.06,.33], .1, FUR2, jaw, FURM2);
   oval(.095,'#2d1a11', sg*.235,2.06,1.9, 1,1,1);              /* eye, low on the skull */
   sph(.035,'#fff6e8',sg*.265,2.1,1.96,dog);
   oval(.065,FUR3, sg*.23,2.16,1.9, 1.25,.5,1);                /* brow */
-  const ear = add(new T.Mesh(new T.SphereGeometry(.44,18,14), mat(FUR3)), dog);
+  /* the crown of the ellipsoid is cut away: hung this high, it poked up past
+     where the ear meets the skull. What is left starts at the attachment and
+     hangs down, and the open top sits inside the skull where nothing sees it. */
+  const ear = add(new T.Mesh(
+    new T.SphereGeometry(.44,18,14, 0, Math.PI*2, Math.PI*.28, Math.PI*.72), mat(FUR3)), dog);
   ear.scale.set(.1,1.2,.58);                                  /* long, hanging to the jaw */
-  ear.position.set(sg*.3,1.66,1.56);
+  ear.position.set(sg*.3,1.78,1.56);                          /* attached higher on the head */
   ear.rotation.z = sg*.06; ear.rotation.y = sg*.26; ear.rotation.x = .1;
 });
 const tailBase = new T.Group(); tailBase.position.set(-.04,.72,-2.02); dog.add(tailBase);
