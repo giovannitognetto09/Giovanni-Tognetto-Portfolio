@@ -1032,29 +1032,36 @@ cans.rotation.y = -.52;
 
 /* ---- aquarium ---- */
 const tank = new T.Group(); scene.add(tank);
+/* seen through four faces of glass, so the contents start deeper and take less
+   environment light -- otherwise everything in here washes out to cream */
+const wet = (c, r = .62) => new T.MeshStandardMaterial({
+  color:new T.Color(c), roughness:r, metalness:0, envMapIntensity:.14
+});
 box(3.3,.16,1.8,'#2c2a27',0,.08,0,tank);
 box(3.3,.14,1.8,'#2c2a27',0,2.08,0,tank);
 box(2.7,.08,.34,'#f1e8d2',0,2.02,0,tank);
-box(2.98,.3,1.5,'#8a7a63',0,.32,0,tank);
+box(2.98,.3,1.5,'#8a7a63',0,.32,0,tank).material = wet('#6a5b45', .9);   /* gravel */
 for (let i=0;i<8;i++){
   const h = .5 + (i%3)*.34;
   const bl = box(.13,h,.07, i%2 ? '#4e8a46' : '#67a95b', -1.25 + i*.36, .44 + h/2, -.25, tank);
+  bl.material = wet(i%2 ? '#2f6b2c' : '#3f8a3a', .78);
   bl.rotation.z = (i%2 ? .22 : -.22);
 }
-cyl(.2,.26,.3,'#7d6b55',1.1,.5,.3,12,tank);
+cyl(.2,.26,.3,'#7d6b55',1.1,.5,.3,12,tank).material = wet('#5e5040', .88);
 const FISH = [];
-[['#e8720f',-.55,1.25,.3],['#e8b800',.1,1.6,-.15],['#d4321c',.7,.95,.25]].forEach(([c,x,y,z],i) => {
+[['#d15c00',-.55,1.25,.3],['#d8a400',.1,1.6,-.15],['#b8240f',.7,.95,.25]].forEach(([c,x,y,z],i) => {
   const g = new T.Group(); tank.add(g);
-  const f = sph(.2,c,0,0,0,g); f.scale.set(1.55,.82,.5);
-  const tl = add(new T.Mesh(new T.ConeGeometry(.15,.27,8), mat(c)), g);
+  const fm = wet(c, .5);
+  const f = sph(.2,c,0,0,0,g); f.scale.set(1.55,.82,.5); f.material = fm;
+  const tl = add(new T.Mesh(new T.ConeGeometry(.15,.27,8), fm), g);
   tl.rotation.z = Math.PI/2; tl.position.set(-.32,0,0);
   sph(.045,'#241a12',.11,.045,.095,g);                 /* eye */
   sph(.045,'#241a12',.11,.045,-.095,g);
   g.position.set(x,y,z);
   FISH.push({g, x, y, ph: i*2.1, sp: .5 + i*.17});
 });
-const glassMat = new T.MeshStandardMaterial({color:new T.Color('#a9d8e4'), transparent:true,
-  opacity:.16, roughness:.05, metalness:0, envMapIntensity:.7, depthWrite:false});
+const glassMat = new T.MeshStandardMaterial({color:new T.Color('#bfe6ef'), transparent:true,
+  opacity:.07, roughness:.12, metalness:0, envMapIntensity:.18, depthWrite:false});
 const glass = new T.Mesh(new T.BoxGeometry(3.1,1.9,1.6), glassMat);
 glass.position.set(0,1.05,0); glass.renderOrder = 3; tank.add(glass);
 { const c = cub(2,2); tank.position.set(c.x, c.y + .08, 1.95); }
@@ -1833,8 +1840,8 @@ function loop(now){
     /* Nove: a happy wag, the tip trailing the base, and every few seconds two
        quick silent barks */
     const nt = window.__dogT !== undefined ? window.__dogT : now;   /* test hook */
-    tailBase.rotation.y = Math.sin(nt/95)*.42;
-    tailTip.rotation.y  = Math.sin(nt/95 - .9)*.5;
+    tailBase.rotation.y = Math.sin(nt/119)*.42;
+    tailTip.rotation.y  = Math.sin(nt/119 - .9)*.5;
     const tb = (nt/1000) % 4.6;
     let open = 0;
     if (tb < .2) open = Math.sin(tb/.2*Math.PI);
