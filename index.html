@@ -678,33 +678,34 @@ const link = (a, b, r, c, p, m) => {
 const FLOOR = -5.2;
 const wall = box(80,34,1,'#55493c',0,12,-5); wall.castShadow = false;
 {
-  /* painted plaster: a faint large-scale mottle, fine relief, and a little
-     more light near the floor, so the back wall is not one flat fill */
-  const px = 512, c = document.createElement('canvas'); c.width = c.height = px;
+  /* Painted plaster, kept deliberately plain. Earlier attempts tiled soft
+     blobs and fine relief across 80 units of wall, which read as blotches and
+     as a repeating speckle -- a loading screen, not a room. A real wall at this
+     distance is almost featureless: one un-tiled image, a gentle gradient
+     because walls catch bounce off the floor, and paint tooth too fine to
+     resolve. No normal map: at this scale its repeat is all you would see. */
+  const W = 1024, H = 512;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
-  g.fillStyle = '#f2f2f2'; g.fillRect(0,0,px,px);
-  /* every blob is drawn nine times, once per wrap offset, so the texture tiles
-     without a seam -- drawn once it showed up as a grid of squares on the wall */
-  for (let i=0;i<260;i++){
-    const bx = Math.random()*px, by = Math.random()*px, r = 24 + Math.random()*86;
-    const up = Math.random() < .5;
-    for (let ox=-1; ox<=1; ox++) for (let oy=-1; oy<=1; oy++){
-      const x = bx + ox*px, y = by + oy*px;
-      if (x < -r || x > px+r || y < -r || y > px+r) continue;
-      const rg = g.createRadialGradient(x,y,0,x,y,r);
-      rg.addColorStop(0, up ? 'rgba(255,255,255,.018)' : 'rgba(74,58,42,.018)');
-      rg.addColorStop(1, 'rgba(255,255,255,0)');
-      g.fillStyle = rg; g.beginPath(); g.arc(x,y,r,0,6.3); g.fill();
-    }
+  const grad = g.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,   '#b4b4b4');
+  grad.addColorStop(.55, '#d8d8d8');
+  grad.addColorStop(1,   '#efefef');
+  g.fillStyle = grad; g.fillRect(0,0,W,H);
+  const id = g.getImageData(0,0,W,H), d8 = id.data;
+  for (let i=0;i<d8.length;i+=4){
+    const n = (Math.random()-.5)*6;
+    d8[i] += n; d8[i+1] += n; d8[i+2] += n;
   }
+  g.putImageData(id,0,0);
   const plaster = new T.CanvasTexture(c);
   plaster.colorSpace = T.SRGBColorSpace;
-  plaster.wrapS = plaster.wrapT = T.RepeatWrapping; plaster.repeat.set(7,3);
-  const wn = NRM.clone(); wn.needsUpdate = true; wn.repeat.set(26,11);
-  const wr = ROUGH.clone(); wr.needsUpdate = true; wr.repeat.set(9,4);
+  plaster.wrapS = plaster.wrapT = T.ClampToEdgeWrapping;
+  plaster.anisotropy = 8;
+  const wr = ROUGH.clone(); wr.needsUpdate = true; wr.repeat.set(5,2.2);
   wall.material = new T.MeshStandardMaterial({
-    color:new T.Color('#6b5c4c'), map:plaster, roughness:.96, metalness:0,
-    envMapIntensity:.26, roughnessMap:wr, normalMap:wn, normalScale:new T.Vector2(.16,.16)
+    color:new T.Color('#6f6050'), map:plaster, roughness:.98, metalness:0,
+    envMapIntensity:.16, roughnessMap:wr
   });
 }
 const floor = box(80,1,26,'#3a3029',0,FLOOR-.5,7); floor.castShadow = false;
@@ -763,7 +764,7 @@ box(4.4,.42,4.2,'#5a4631',0,0,0,chairG).material = wood('#73573a',1.6);
 const cback = box(4.4,3.3,.4,'#5a4631',0,1.85,1.9,chairG); cback.rotation.x = .1;
 cback.material = wood('#73573a',1.4);
 box(4.4,.3,.4,'#43341f',0,3.5,1.72,chairG).rotation.x = .1;
-chairG.position.set(dx+.4, FLOOR+3.1, 6.4);
+chairG.position.set(dx-.5, FLOOR+3.1, 6.4);
 
 /* laptop (clickable -> work) */
 const laptop = new T.Group(); scene.add(laptop);
@@ -1388,20 +1389,20 @@ const UNI_INK = [null, '#eadfca', '#eef2e6', '#2b2721'];
    the thickest of them -- it is the one he spent three years on. */
 [['#8e3b32',0,.5,2.95],['#3e5e7e',.5,.86,3.1],['#5e7a4f',1.36,.56,2.62],['#c9a64a',1.92,.56,2.42]]
 .forEach(([c,y,bh,w],i) => {
-  const b = box(w,bh,1.7,c,0,y+bh/2,0,academia);
+  const b = box(w,bh,1.7,c,.85,y+bh/2,0,academia);
   b.rotation.y = (i%2 ? .07 : -.06);
   if (UNI[i]) spineLabel(b, w*.9, bh*.78, .87, UNI[i], c, UNI_INK[i], false, 1.25);
 });
 /* two standing beside the stack */
-box(.34,2.2,1.5,'#a6512e',2.05,1.1,0,academia);
-box(.3,1.95,1.5,'#6b5aa6',2.4,.98,0,academia).rotation.z = .1;
+box(.34,2.2,1.5,'#a6512e',2.9,1.1,0,academia);
+box(.3,1.95,1.5,'#6b5aa6',3.25,.98,0,academia).rotation.z = .1;
 /* graduation cap on top of the stack */
 const cap = new T.Group(); academia.add(cap);
 cyl(.46,.5,.34,'#2b2721',0,.17,0,20,cap);
 const board = box(1.75,.11,1.75,'#2b2721',0,.4,0,cap); board.rotation.y = .62;
 const tas = cyl(.045,.045,.62,'#e8bf49',.72,.16,.5,8,cap); tas.rotation.x = .35; tas.rotation.z = .2;
 sph(.1,'#e8bf49',.78,-.12,.62,cap);
-cap.position.set(-.15,2.62,.1); cap.scale.setScalar(1.55);
+cap.position.set(.7,2.62,.1); cap.scale.setScalar(1.55);
 /* rolled diploma with a ribbon */
 const dip = new T.Group(); academia.add(dip);
 cyl(.3,.3,3.0,'#f7f0e2',0,0,0,20,dip).rotation.z = Math.PI/2;
@@ -1598,7 +1599,13 @@ oval(.39,FUR,  0,2.02,1.64, .97,.86,1.2);                     /* skull: flatter,
 oval(.27,FUR,  0,1.92,1.86, .92,.8,.95);                      /* stop */
 link([0,1.9,1.88], [0,1.81,2.32], .2, FUR2, dog, FURM2);             /* muzzle */
 oval(.145,DARK, 0,1.8,2.43, 1.12,.88,.82);                    /* nose */
-oval(.085,FUR2, 0,1.69,2.18, 1.1,.55,1.5);                    /* chin */
+/* lower jaw on a hinge: shut, it hides inside the muzzle with just the chin
+   showing; open, it drops clear and shows the tongue */
+const jaw = new T.Group(); jaw.position.set(0,1.75,1.98); dog.add(jaw);
+link([0,0,0], [0,-.06,.33], .1, FUR2, jaw, FURM2);
+{ const tg = sph(.085,'#d9727a',0,.045,.2,jaw); tg.scale.set(.95,.3,1.7);
+  tg.material = new T.MeshStandardMaterial({color:new T.Color('#d9727a'), roughness:.35, envMapIntensity:.5}); }
+{ const mouthDark = sph(.12,'#2a1310',0,1.7,2.12,dog); mouthDark.scale.set(1.1,.5,1.6); }
 
 [-1,1].forEach(sg => {
   oval(.52,FUR, sg*.5,.66,-1.1, .44,.92,1.15);                /* thigh, proud of the body */
@@ -1614,23 +1621,28 @@ oval(.085,FUR2, 0,1.69,2.18, 1.1,.55,1.5);                    /* chin */
   ear.position.set(sg*.3,1.66,1.56);
   ear.rotation.z = sg*.06; ear.rotation.y = sg*.26; ear.rotation.x = .1;
 });
-link([-.04,.72,-2.02], [.66,.44,-2.16], .125, FUR, dog);      /* tail */
-link([.66,.44,-2.16], [1.32,.3,-1.74], .095, FUR, dog);
-dog.position.set(-.2, FLOOR, 5.8);
+const tailBase = new T.Group(); tailBase.position.set(-.04,.72,-2.02); dog.add(tailBase);
+link([0,0,0], [.70,-.28,-.14], .125, FUR, tailBase, FURM);
+const tailTip = new T.Group(); tailTip.position.set(.70,-.28,-.14); tailBase.add(tailTip);
+link([0,0,0], [.66,-.14,.42], .095, FUR, tailTip, FURM);
+sph(.125,FUR,0,0,0,tailTip).material = FURM;                   /* joint */
+dog.position.set(-2.5, FLOOR, 5.8);
 dog.rotation.y = -.78;
-dog.scale.setScalar(1.3);
+dog.scale.setScalar(1.67);
 
 contact(dx, 1.6, 24, 12, .85);          /* under the desk */
 contact(hx, 2.0, 19, 10, .8);           /* under the bookcase */
-contact(dx+.4, 6.4, 8, 7, .55);         /* under the chair */
-contact(-.2, 5.8, 7.5, 6.5, .5);        /* under Nove */
+contact(dx-.5, 6.4, 8, 7, .55);         /* under the chair */
+contact(-2.5, 5.8, 9.4, 8.1, .5);      /* under Nove */
 
 /* wall clock (decor, fills the empty wall) */
 const clock = new T.Group(); scene.add(clock);
-const face = cyl(1.5,1.5,.3,'#efe7d6',0,0,0,36,clock); face.rotation.x = Math.PI/2;
-const rim = add(new T.Mesh(new T.TorusGeometry(1.5,.16,10,36), mat('#4a3b2d')), clock);
-box(.12,1,.08,'#3a322a',0,.3,.2,clock);
-box(.1,.7,.08,'#8a3b32',.22,.1,.2,clock).rotation.z = -1.1;
+/* face is smaller and thinner than the rim's tube, so its edge is buried
+   well inside the rim instead of grazing its surface */
+const face = cyl(1.4,1.4,.2,'#efe7d6',0,0,0,72,clock); face.rotation.x = Math.PI/2;
+const rim = add(new T.Mesh(new T.TorusGeometry(1.5,.17,14,64), mat('#4a3b2d')), clock);
+box(.12,1,.06,'#3a322a',0,.3,.15,clock);
+box(.1,.7,.06,'#8a3b32',.22,.1,.17,clock).rotation.z = -1.1;
 clock.position.set(.9, 11.6, -4.2);
 
 /* ---------- clickable objects ---------- */
@@ -1817,6 +1829,18 @@ function loop(now){
 
   /* hovered things warm up; HINTS makes them all breathe */
   const pulse = hintsOn ? (Math.sin(now/320)*.5+.5)*.11 + .04 : 0;
+  if (!reduce){
+    /* Nove: a happy wag, the tip trailing the base, and every few seconds two
+       quick silent barks */
+    const nt = window.__dogT !== undefined ? window.__dogT : now;   /* test hook */
+    tailBase.rotation.y = Math.sin(nt/95)*.42;
+    tailTip.rotation.y  = Math.sin(nt/95 - .9)*.5;
+    const tb = (nt/1000) % 4.6;
+    let open = 0;
+    if (tb < .2) open = Math.sin(tb/.2*Math.PI);
+    else if (tb > .34 && tb < .54) open = Math.sin((tb-.34)/.2*Math.PI);
+    jaw.rotation.x = open*.72;
+  }
   for (const f of FISH){
     f.g.position.x = f.x + Math.sin(now/1000*f.sp + f.ph) * .42;   /* kept inside the glass */
     f.g.position.y = f.y + Math.sin(now/1400*f.sp + f.ph*1.7) * .12;
